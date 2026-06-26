@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Payment Tracker</title>
+<style>
+  :root{--ink:#16252b;--soft:#4a5d63;--paper:#f7f5f0;--card:#fff;--line:#e4e0d6;
+    --accent:#d97a34;--accent-ink:#a85a1f;--ok:#2f7d5b;--no:#b53b2e;--warn:#c98a1a;
+    --mono:ui-monospace,Menlo,Consolas,monospace;--sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:var(--sans);background:var(--paper);color:var(--ink);line-height:1.45;padding:18px 16px;max-width:620px;margin:0 auto;-webkit-font-smoothing:antialiased}
+  h1{font-size:21px;letter-spacing:-.02em}
+  .sub{color:var(--soft);font-size:13px;margin-bottom:18px}
+  .cards{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:18px}
+  .c{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px}
+  .c .k{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--soft)}
+  .c .v{font-family:var(--mono);font-size:22px;font-weight:700;margin-top:4px}
+  .c.out .v{color:var(--accent-ink)}.c.over .v{color:var(--no)}
+  .add{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:18px}
+  .add .r{display:grid;grid-template-columns:1fr 110px;gap:8px;margin-bottom:8px}
+  .add .r2{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px}
+  label{font-size:11px;font-weight:600;color:var(--soft);display:block;margin-bottom:3px}
+  input{font:inherit;width:100%;padding:10px 11px;border:1px solid var(--line);border-radius:8px;background:var(--card)}
+  input.num{font-family:var(--mono);text-align:right}
+  input:focus{outline:2px solid var(--accent);border-color:var(--accent)}
+  .addbtn{width:100%;font:inherit;font-weight:600;padding:11px;border:none;border-radius:8px;background:var(--accent);color:#fff;cursor:pointer}
+  .inv{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:10px}
+  .inv.overdue{border-left:4px solid var(--no)}
+  .inv.paid{opacity:.6}
+  .itop{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+  .itop .who b{font-size:16px}.itop .who .d{font-size:12px;color:var(--soft);margin-top:2px}
+  .itop .amt{font-family:var(--mono);font-weight:700;font-size:17px;white-space:nowrap}
+  .badge{display:inline-block;font-size:11px;font-weight:700;padding:3px 8px;border-radius:20px;margin-top:6px}
+  .badge.unpaid{background:#fdf0e0;color:var(--accent-ink)}
+  .badge.overdue{background:#fbe6e3;color:var(--no)}
+  .badge.paid{background:#e3f1ea;color:var(--ok)}
+  .iact{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+  .iact button{font:inherit;font-size:13px;font-weight:600;border:1px solid var(--line);background:var(--paper);border-radius:8px;padding:8px 12px;cursor:pointer;color:var(--ink)}
+  .iact button.pay{background:var(--ok);color:#fff;border-color:var(--ok)}
+  .iact button.rm{margin-left:auto;color:var(--soft);border:none;background:none}
+  .reminder{margin-top:12px;display:none}
+  .reminder.show{display:block}
+  .reminder textarea{width:100%;font:inherit;font-size:13px;padding:11px;border:1px solid var(--line);border-radius:8px;background:var(--paper);resize:vertical;min-height:96px}
+  .reminder .cp{margin-top:6px;font:inherit;font-size:13px;font-weight:600;background:var(--accent);color:#fff;border:none;border-radius:8px;padding:8px 14px;cursor:pointer}
+  .empty{padding:26px;text-align:center;color:var(--soft);font-style:italic;background:var(--card);border:1px solid var(--line);border-radius:12px}
+</style>
+</head>
+<body>
+  <h1>Who Owes Me</h1>
+  <div class="sub">Track invoices, see what's overdue, and generate a polite reminder to send · saved on this device</div>
+
+  <div class="cards">
+    <div class="c out"><div class="k">Outstanding</div><div class="v" id="vOut">$0</div></div>
+    <div class="c over"><div class="k">Overdue</div><div class="v" id="vOver">$0</div></div>
+  </div>
+
+  <div class="add">
+    <div class="r">
+      <div><label>Client name</label><input id="cli" placeholder="Mrs Lim"></div>
+      <div><label>Amount</label><input id="amt" class="num" type="number" min="0" step="0.01" placeholder="0.00"></div>
+    </div>
+    <div class="r2">
+      <div><label>For (optional)</label><input id="desc" placeholder="May tuition"></div>
+      <div><label>Due date</label><input id="due" type="date"></div>
+    </div>
+    <button class="addbtn" onclick="add()">+ Add invoice</button>
+  </div>
+
+  <div id="list"></div>
+
+<script>
+  const $=id=>document.getElementById(id);
+  let inv=[];try{inv=JSON.parse(localStorage.getItem('pay')||'[]')}catch(e){inv=[]}
+  let openR=-1;const sym='$';
+  const fmt=n=>sym+n.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});
+  const todayISO=()=>new Date().toISOString().slice(0,10);
+  function save(){localStorage.setItem('pay',JSON.stringify(inv))}
+  function add(){
+    const c=$('cli').value.trim();const a=parseFloat($('amt').value);
+    if(!c||!a||a<=0){$('cli').focus();return;}
+    inv.unshift({c,a,desc:$('desc').value.trim(),due:$('due').value||'',paid:false});
+    $('cli').value='';$('amt').value='';$('desc').value='';$('due').value='';
+    save();render();
+  }
+  function togPaid(i){inv[i].paid=!inv[i].paid;save();render();}
+  function rm(i){inv.splice(i,1);if(openR===i)openR=-1;save();render();}
+  function toggleR(i){openR=openR===i?-1:i;render();}
+  function fmtDue(d){if(!d)return'no due date';const dt=new Date(d+'T00:00');return dt.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'});}
+  function isOverdue(x){return !x.paid && x.due && x.due<todayISO();}
+  function reminderText(x){
+    const due=x.due?` (due ${fmtDue(x.due)})`:'';
+    const what=x.desc?` for ${x.desc}`:'';
+    return `Hi ${x.c}, hope you're well! Just a friendly reminder about the outstanding payment of ${fmt(x.a)}${what}${due}. You can PayNow to me at your convenience — let me know if you've already sent it. Thank you! 🙏`;
+  }
+  function copyR(i){
+    const ta=document.getElementById('ta'+i);ta.select();
+    try{navigator.clipboard.writeText(ta.value)}catch(e){try{document.execCommand('copy')}catch(e2){}}
+    const b=document.getElementById('cp'+i);b.textContent='Copied ✓';setTimeout(()=>b.textContent='Copy message',1500);
+  }
+  function render(){
+    let out=0,over=0;
+    inv.forEach(x=>{if(!x.paid){out+=x.a;if(isOverdue(x))over+=x.a;}});
+    $('vOut').textContent=fmt(out);$('vOver').textContent=fmt(over);
+    const order=[...inv.keys()].sort((a,b)=>{
+      const xa=inv[a],xb=inv[b];
+      const pa=xa.paid?2:(isOverdue(xa)?0:1),pb=xb.paid?2:(isOverdue(xb)?0:1);
+      if(pa!==pb)return pa-pb;
+      return (xa.due||'9999').localeCompare(xb.due||'9999');
+    });
+    const l=$('list');
+    if(!inv.length){l.innerHTML='<div class="empty">No invoices yet. Add one above to start tracking.</div>';return;}
+    l.innerHTML='';
+    order.forEach(i=>{
+      const x=inv[i];const od=isOverdue(x);
+      const status=x.paid?'paid':(od?'overdue':'unpaid');
+      const label=x.paid?'Paid':(od?'Overdue':'Unpaid');
+      const div=document.createElement('div');
+      div.className='inv'+(x.paid?' paid':'')+(od?' overdue':'');
+      div.innerHTML=`
+        <div class="itop">
+          <div class="who"><b>${esc(x.c)}</b><div class="d">${esc(x.desc)||'Payment'} · ${fmtDue(x.due)}</div>
+            <span class="badge ${status}">${label}</span></div>
+          <div class="amt">${fmt(x.a)}</div>
+        </div>
+        <div class="iact">
+          <button class="pay" onclick="togPaid(${i})">${x.paid?'↩ Mark unpaid':'✓ Mark paid'}</button>
+          ${x.paid?'':`<button onclick="toggleR(${i})">${openR===i?'Hide reminder':'✉ Reminder'}</button>`}
+          <button class="rm" onclick="rm(${i})">Delete</button>
+        </div>
+        ${(!x.paid&&openR===i)?`<div class="reminder show">
+          <textarea id="ta${i}" readonly>${esc(reminderText(x))}</textarea>
+          <button class="cp" id="cp${i}" onclick="copyR(${i})">Copy message</button>
+        </div>`:''}`;
+      l.appendChild(div);
+    });
+  }
+  function esc(t){return(t||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
+  render();
+</script>
+</body>
+</html>

@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quote Maker</title>
+<style>
+  :root{
+    --ink:#16252b;        /* deep teal-ink: primary text + structure */
+    --ink-soft:#4a5d63;   /* muted labels */
+    --paper:#f7f5f0;      /* working surface */
+    --card:#ffffff;
+    --line:#e4e0d6;       /* hairlines */
+    --accent:#d97a34;     /* single warm accent — burnt amber */
+    --accent-ink:#a85a1f;
+    --ok:#2f7d5b;
+    --mono:ui-monospace,"SF Mono",Menlo,Consolas,"Roboto Mono",monospace;
+    --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{
+    font-family:var(--sans);
+    color:var(--ink);
+    background:var(--paper);
+    line-height:1.45;
+    -webkit-font-smoothing:antialiased;
+  }
+
+  /* ---------- App shell ---------- */
+  .topbar{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:14px 22px;border-bottom:1px solid var(--line);
+    background:var(--card);
+  }
+  .brand{display:flex;align-items:baseline;gap:10px}
+  .brand b{font-size:17px;letter-spacing:-.02em}
+  .brand span{font-size:12px;color:var(--ink-soft)}
+  .topbar button{
+    font:inherit;font-size:14px;font-weight:600;cursor:pointer;
+    border:none;border-radius:8px;padding:10px 18px;
+    background:var(--accent);color:#fff;
+  }
+  .topbar button:hover{background:var(--accent-ink)}
+
+  .wrap{
+    display:grid;grid-template-columns:minmax(340px,440px) 1fr;
+    gap:0;align-items:start;
+  }
+  @media (max-width:820px){
+    .wrap{grid-template-columns:1fr}
+  }
+
+  /* ---------- Left: the form ---------- */
+  .panel{padding:22px;border-right:1px solid var(--line);min-height:100vh}
+  @media (max-width:820px){.panel{border-right:none;border-bottom:1px solid var(--line);min-height:auto}}
+
+  .eyebrow{
+    font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;
+    color:var(--ink-soft);margin:26px 0 10px;display:flex;align-items:center;gap:8px;
+  }
+  .eyebrow:first-child{margin-top:0}
+  .eyebrow::after{content:"";flex:1;height:1px;background:var(--line)}
+
+  label{display:block;font-size:12px;font-weight:600;color:var(--ink-soft);margin:0 0 4px}
+  input,select{
+    font:inherit;width:100%;padding:9px 11px;
+    border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--ink);
+  }
+  input:focus,select:focus{outline:2px solid var(--accent);outline-offset:1px;border-color:var(--accent)}
+  .field{margin-bottom:12px}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+
+  /* line items */
+  .item{
+    display:grid;grid-template-columns:1fr 64px 92px 28px;gap:8px;align-items:end;
+    margin-bottom:8px;
+  }
+  .item .mini{font-size:10px}
+  .item input{padding:8px 9px}
+  .item .num{font-family:var(--mono);text-align:right}
+  .del{
+    border:1px solid var(--line);background:var(--card);border-radius:8px;
+    height:38px;cursor:pointer;color:var(--ink-soft);font-size:18px;line-height:1;
+  }
+  .del:hover{color:#b53b2e;border-color:#e6b6b0}
+  .additem{
+    width:100%;margin-top:4px;padding:9px;font:inherit;font-weight:600;font-size:13px;
+    border:1px dashed var(--line);border-radius:8px;background:transparent;color:var(--accent-ink);cursor:pointer;
+  }
+  .additem:hover{border-color:var(--accent);background:#fbf3ea}
+
+  .gstrow{display:flex;align-items:center;gap:10px}
+  .gstrow input[type=checkbox]{width:auto}
+  .gstrow .rate{width:70px}
+  .saved{font-size:12px;color:var(--ok);font-weight:600;opacity:0;transition:opacity .2s}
+  .saved.show{opacity:1}
+
+  /* ---------- Right: the live document ---------- */
+  .stage{padding:30px;display:flex;justify-content:center}
+  @media (max-width:820px){.stage{padding:18px}}
+
+  .document{
+    width:100%;max-width:640px;background:var(--card);
+    border:1px solid var(--line);border-radius:14px;
+    box-shadow:0 18px 40px -28px rgba(22,37,43,.5);
+    padding:42px 46px;
+  }
+  .doc-head{display:flex;justify-content:space-between;align-items:flex-start;gap:20px}
+  .doc-biz b{font-size:20px;letter-spacing:-.02em;display:block}
+  .doc-biz small{color:var(--ink-soft);font-size:12px;white-space:pre-line;display:block;margin-top:4px}
+  .doc-tag{
+    text-align:right;
+  }
+  .doc-tag .word{
+    font-size:13px;font-weight:800;letter-spacing:.28em;text-transform:uppercase;color:var(--accent-ink);
+  }
+  .doc-tag .qno{font-family:var(--mono);font-size:13px;color:var(--ink-soft);margin-top:4px}
+  .doc-tag .date{font-family:var(--mono);font-size:12px;color:var(--ink-soft)}
+
+  .doc-to{margin:30px 0 18px}
+  .doc-to .k{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft)}
+  .doc-to .v{font-size:17px;font-weight:600;margin-top:2px}
+
+  table{width:100%;border-collapse:collapse;margin-top:6px}
+  thead th{
+    font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-soft);
+    text-align:left;padding:0 0 8px;border-bottom:1.5px solid var(--ink);
+  }
+  thead th.r{text-align:right}
+  tbody td{padding:11px 0;border-bottom:1px solid var(--line);font-size:14px;vertical-align:top}
+  tbody td.r{text-align:right;font-family:var(--mono);white-space:nowrap}
+  tbody td.desc{padding-right:14px}
+  .empty-row td{color:var(--ink-soft);font-style:italic;text-align:center;padding:22px 0}
+
+  .totals{margin-top:18px;margin-left:auto;width:260px}
+  .totals .t{display:flex;justify-content:space-between;padding:6px 0;font-size:14px}
+  .totals .t span:last-child{font-family:var(--mono)}
+  .totals .grand{
+    margin-top:6px;padding-top:12px;border-top:1.5px solid var(--ink);
+    font-size:20px;font-weight:800;letter-spacing:-.01em;
+  }
+  .totals .grand span:last-child{font-family:var(--mono);color:var(--accent-ink)}
+
+  .doc-foot{margin-top:34px;padding-top:16px;border-top:1px solid var(--line);font-size:12px;color:var(--ink-soft)}
+
+  /* ---------- Phone: make it fit the screen ---------- */
+  @media (max-width:560px){
+    .topbar{padding:12px 16px;flex-wrap:wrap;gap:10px}
+    .brand span{display:none}              /* drop the subtitle, keep button room */
+    .topbar button{padding:9px 14px;font-size:13px}
+    .panel{padding:16px}
+    .stage{padding:12px}
+    .document{padding:22px 18px;border-radius:12px}
+    .doc-head{flex-direction:column;gap:14px}
+    .doc-tag{text-align:left}
+    .doc-biz b{font-size:18px}
+    .item{grid-template-columns:1fr 46px 70px 26px;gap:6px}
+    .totals{width:100%}                    /* totals span full width, no overflow */
+    tbody td.desc{word-break:break-word}
+  }
+  /* never allow a sideways scrollbar */
+  html,body{overflow-x:hidden}
+
+  /* ---------- Print: only the document ---------- */
+  @media print{
+    @page{margin:14mm}
+    body{background:#fff}
+    .topbar,.panel,.additem,.del{display:none!important}
+    .wrap{display:block}
+    .stage{padding:0}
+    .document{border:none;box-shadow:none;border-radius:0;max-width:none;padding:0}
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="brand"><b>Quote Maker</b><span>opens anywhere · saves nothing online · works offline</span></div>
+  <button onclick="window.print()">Save as PDF</button>
+</div>
+
+<div class="wrap">
+
+  <!-- ============ FORM ============ -->
+  <section class="panel">
+    <div class="eyebrow">Your business</div>
+    <div class="field">
+      <label for="bizName">Business name</label>
+      <input id="bizName" placeholder="e.g. Tan's Mobile Car Wash">
+    </div>
+    <div class="field">
+      <label for="bizInfo">Contact / address <span style="font-weight:400">(optional)</span></label>
+      <input id="bizInfo" placeholder="Phone · email · UEN">
+    </div>
+    <div class="field" style="display:flex;align-items:center;gap:10px">
+      <button class="additem" style="margin-top:0;flex:0 0 auto;width:auto;padding:8px 14px" onclick="saveBiz()">Remember my details</button>
+      <span class="saved" id="savedMsg">Saved on this device ✓</span>
+    </div>
+
+    <div class="eyebrow">Quote for</div>
+    <div class="field">
+      <label for="clientName">Client name</label>
+      <input id="clientName" placeholder="e.g. Mrs Lim">
+    </div>
+
+    <div class="eyebrow">Line items</div>
+    <div class="item" style="margin-bottom:4px">
+      <label class="mini">Description</label>
+      <label class="mini" style="text-align:right">Qty</label>
+      <label class="mini" style="text-align:right">Unit $</label>
+      <span></span>
+    </div>
+    <div id="items"></div>
+    <button class="additem" onclick="addItem()">+ Add line</button>
+
+    <div class="eyebrow">Tax</div>
+    <div class="gstrow field">
+      <input type="checkbox" id="gstOn" onchange="render()">
+      <label for="gstOn" style="margin:0">Add GST</label>
+      <input class="rate num" type="number" id="gstRate" value="9" min="0" max="30" step="0.5" oninput="render()">
+      <span style="color:var(--ink-soft);font-size:13px">%</span>
+    </div>
+
+    <div class="eyebrow">Currency</div>
+    <div class="field">
+      <select id="cur" onchange="render()">
+        <option value="SGD">SGD — S$</option>
+        <option value="MYR">MYR — RM</option>
+        <option value="USD">USD — $</option>
+        <option value="EUR">EUR — €</option>
+        <option value="GBP">GBP — £</option>
+      </select>
+    </div>
+  </section>
+
+  <!-- ============ LIVE DOCUMENT ============ -->
+  <section class="stage">
+    <div class="document" id="doc">
+      <div class="doc-head">
+        <div class="doc-biz">
+          <b id="oBiz">Your Business</b>
+          <small id="oBizInfo"></small>
+        </div>
+        <div class="doc-tag">
+          <div class="word">Quote</div>
+          <div class="qno" id="oQno">#0001</div>
+          <div class="date" id="oDate"></div>
+        </div>
+      </div>
+
+      <div class="doc-to">
+        <div class="k">Prepared for</div>
+        <div class="v" id="oClient">—</div>
+      </div>
+
+      <table>
+        <thead>
+          <tr><th>Description</th><th class="r">Qty</th><th class="r">Unit</th><th class="r">Amount</th></tr>
+        </thead>
+        <tbody id="oRows"></tbody>
+      </table>
+
+      <div class="totals">
+        <div class="t"><span>Subtotal</span><span id="oSub">—</span></div>
+        <div class="t" id="oGstLine" style="display:none"><span id="oGstLabel">GST</span><span id="oGst">—</span></div>
+        <div class="t grand"><span>Total</span><span id="oTotal">—</span></div>
+      </div>
+
+      <div class="doc-foot" id="oFoot">Thank you for your business. This quote is valid for 30 days.</div>
+    </div>
+  </section>
+
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+const CUR = {SGD:'S$',MYR:'RM',USD:'$',EUR:'€',GBP:'£'};
+
+// --- quote number: auto-increment, persisted ---
+let qnum = parseInt(localStorage.getItem('qm_qnum') || '1', 10);
+function pad(n){return String(n).padStart(4,'0')}
+
+// --- line items model ---
+let items = [];
+function addItem(desc='',qty='',price=''){
+  const i = items.length;
+  const div = document.createElement('div');
+  div.className = 'item';
+  div.innerHTML =
+    `<input placeholder="Service or product" value="${desc}" oninput="upd(${i},'desc',this.value)">
+     <input class="num" type="number" min="0" step="1" placeholder="1" value="${qty}" oninput="upd(${i},'qty',this.value)">
+     <input class="num" type="number" min="0" step="0.01" placeholder="0.00" value="${price}" oninput="upd(${i},'price',this.value)">
+     <button class="del" title="Remove" onclick="delItem(${i})">×</button>`;
+  $('items').appendChild(div);
+  items.push({desc,qty,price,el:div});
+  render();
+}
+function upd(i,k,v){ if(items[i]){items[i][k]=v; render();} }
+function delItem(i){
+  if(!items[i]) return;
+  items[i].el.remove();
+  items[i] = null;
+  render();
+}
+
+// --- business details persist ---
+function saveBiz(){
+  localStorage.setItem('qm_biz', $('bizName').value);
+  localStorage.setItem('qm_bizinfo', $('bizInfo').value);
+  $('savedMsg').classList.add('show');
+  setTimeout(()=>$('savedMsg').classList.remove('show'),1800);
+}
+function loadBiz(){
+  $('bizName').value = localStorage.getItem('qm_biz') || '';
+  $('bizInfo').value = localStorage.getItem('qm_bizinfo') || '';
+}
+
+// --- the live render: this panel IS what prints ---
+function render(){
+  const sym = CUR[$('cur').value] || '$';
+  const money = n => sym + n.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});
+
+  $('oBiz').textContent = $('bizName').value || 'Your Business';
+  $('oBizInfo').textContent = $('bizInfo').value || '';
+  $('oClient').textContent = $('clientName').value || '—';
+  $('oQno').textContent = '#' + pad(qnum);
+  $('oDate').textContent = new Date().toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'});
+
+  const live = items.filter(Boolean);
+  const rows = $('oRows');
+  rows.innerHTML = '';
+  let sub = 0;
+
+  if(live.length === 0){
+    rows.innerHTML = '<tr class="empty-row"><td colspan="4">Add a line item to begin</td></tr>';
+  } else {
+    live.forEach(it=>{
+      const q = parseFloat(it.qty)||0;
+      const p = parseFloat(it.price)||0;
+      const amt = q*p; sub += amt;
+      const tr = document.createElement('tr');
+      tr.innerHTML =
+        `<td class="desc">${escapeHtml(it.desc)||'<span style="color:#9aa">Untitled</span>'}</td>
+         <td class="r">${q||''}</td>
+         <td class="r">${p?money(p):''}</td>
+         <td class="r">${(q&&p)?money(amt):''}</td>`;
+      rows.appendChild(tr);
+    });
+  }
+
+  let total = sub;
+  if($('gstOn').checked){
+    const rate = parseFloat($('gstRate').value)||0;
+    const gst = sub*rate/100;
+    total = sub+gst;
+    $('oGstLine').style.display='flex';
+    $('oGstLabel').textContent = `GST (${rate}%)`;
+    $('oGst').textContent = money(gst);
+  } else {
+    $('oGstLine').style.display='none';
+  }
+
+  $('oSub').textContent = money(sub);
+  $('oTotal').textContent = money(total);
+}
+
+function escapeHtml(s){return (s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
+
+// live-update business + client fields on the document as you type
+['bizName','bizInfo','clientName'].forEach(id=>$(id).addEventListener('input',render));
+
+// On print, bump the quote number for next time
+window.addEventListener('beforeprint',()=>{
+  localStorage.setItem('qm_qnum', String(qnum+1));
+});
+window.addEventListener('afterprint',()=>{
+  qnum = parseInt(localStorage.getItem('qm_qnum')||String(qnum+1),10);
+  render();
+});
+
+// boot
+loadBiz();
+addItem('','','');
+addItem('','','');
+render();
+</script>
+</body>
+</html>

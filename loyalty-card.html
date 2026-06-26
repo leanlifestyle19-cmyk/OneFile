@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Loyalty Card</title>
+<style>
+  :root{--ink:#16252b;--soft:#4a5d63;--paper:#f7f5f0;--card:#fff;--line:#e4e0d6;
+    --accent:#d97a34;--accent-ink:#a85a1f;--ok:#2f7d5b;
+    --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:var(--sans);background:var(--paper);color:var(--ink);line-height:1.45;
+    min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:20px 16px;-webkit-font-smoothing:antialiased}
+  .card{width:100%;max-width:380px;background:var(--card);border:1px solid var(--line);
+    border-radius:18px;box-shadow:0 18px 40px -28px rgba(22,37,43,.5);overflow:hidden}
+  .top{background:var(--ink);color:#fff;padding:22px 22px 18px}
+  .top input{font:inherit;background:transparent;border:none;color:#fff;width:100%}
+  .shop{font-size:22px;font-weight:800;letter-spacing:-.02em}
+  .shop::placeholder{color:#7e9097}
+  .reward{font-size:13px;color:#b8c6cb;margin-top:4px}
+  .reward::placeholder{color:#5f7077}
+  .grid{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;padding:24px}
+  .stamp{aspect-ratio:1;border-radius:50%;border:2px dashed var(--line);
+    display:flex;align-items:center;justify-content:center;font-size:22px;cursor:pointer;
+    color:transparent;transition:.15s;user-select:none}
+  .stamp.on{background:var(--accent);border:2px solid var(--accent);color:#fff;transform:scale(1.04)}
+  .foot{padding:0 24px 24px;text-align:center}
+  .count{font-size:14px;color:var(--soft);margin-bottom:14px}
+  .count b{color:var(--ink);font-size:16px}
+  .btn{font:inherit;font-weight:600;cursor:pointer;border:none;border-radius:10px;padding:11px 16px;margin:3px}
+  .btn.primary{background:var(--accent);color:#fff}
+  .btn.ghost{background:var(--card);border:1px solid var(--line);color:var(--soft)}
+  .won{background:var(--ok);color:#fff;padding:16px;border-radius:12px;font-weight:700;margin:0 24px 20px;text-align:center;display:none}
+  .won.show{display:block}
+  .cfg{width:100%;max-width:380px;margin-top:16px;font-size:13px;color:var(--soft);text-align:center}
+  .cfg input{width:54px;font:inherit;text-align:center;border:1px solid var(--line);border-radius:8px;padding:5px}
+  .hint{margin-top:14px;font-size:12px;color:var(--soft);text-align:center;max-width:380px}
+</style>
+</head>
+<body>
+  <div class="card">
+    <div class="top">
+      <input class="shop" id="shop" placeholder="Your Shop Name" oninput="save()">
+      <input class="reward" id="reward" placeholder="Collect 10 stamps for a free coffee" oninput="save()">
+    </div>
+    <div class="grid" id="grid"></div>
+    <div class="won" id="won">🎉 Reward unlocked! Show this to redeem.</div>
+    <div class="foot">
+      <div class="count" id="count"></div>
+      <button class="btn primary" onclick="add()">+ Add a stamp</button>
+      <button class="btn ghost" onclick="reset()">Reset card</button>
+    </div>
+  </div>
+  <div class="cfg">Stamps needed: <input id="goal" type="number" min="1" max="20" value="10" onchange="save();build()"></div>
+  <div class="hint">Tip: keep this on the shop phone or tablet — tap a circle each visit. Saves on this device.</div>
+<script>
+  const $=id=>document.getElementById(id);
+  let state={shop:'',reward:'',goal:10,count:0};
+  try{const s=localStorage.getItem('loy');if(s)state=JSON.parse(s);}catch(e){}
+  function save(){state.shop=$('shop').value;state.reward=$('reward').value;state.goal=parseInt($('goal').value)||10;
+    localStorage.setItem('loy',JSON.stringify(state));}
+  function build(){
+    $('shop').value=state.shop;$('reward').value=state.reward;$('goal').value=state.goal;
+    if(state.count>state.goal)state.count=state.goal;
+    const g=$('grid');g.innerHTML='';
+    for(let i=0;i<state.goal;i++){
+      const d=document.createElement('div');d.className='stamp'+(i<state.count?' on':'');d.textContent='✦';
+      d.onclick=()=>{state.count=(i<state.count)?i:i+1;save2();build();};g.appendChild(d);
+    }
+    $('count').innerHTML=`<b>${state.count}</b> / ${state.goal} stamps`;
+    $('won').classList.toggle('show',state.count>=state.goal);
+  }
+  function save2(){localStorage.setItem('loy',JSON.stringify(state));}
+  function add(){if(state.count<state.goal)state.count++;save2();build();}
+  function reset(){state.count=0;save2();build();}
+  build();
+</script>
+</body>
+</html>

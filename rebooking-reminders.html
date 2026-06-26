@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Rebooking Reminders</title>
+<style>
+  :root{--ink:#16252b;--soft:#4a5d63;--paper:#f7f5f0;--card:#fff;--line:#e4e0d6;
+    --accent:#d97a34;--accent-ink:#a85a1f;--ok:#2f7d5b;--no:#b53b2e;
+    --mono:ui-monospace,Menlo,Consolas,monospace;--sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:var(--sans);background:var(--paper);color:var(--ink);line-height:1.45;padding:18px 16px;max-width:600px;margin:0 auto;-webkit-font-smoothing:antialiased}
+  h1{font-size:21px;letter-spacing:-.02em}
+  .sub{color:var(--soft);font-size:13px;margin-bottom:18px}
+  .add{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:18px}
+  .add .r{display:grid;grid-template-columns:1fr 96px 96px;gap:8px;margin-bottom:8px}
+  label{font-size:11px;font-weight:600;color:var(--soft);display:block;margin-bottom:3px}
+  input{font:inherit;width:100%;padding:10px 11px;border:1px solid var(--line);border-radius:8px;background:var(--card)}
+  input:focus{outline:2px solid var(--accent);border-color:var(--accent)}
+  .addbtn{width:100%;font:inherit;font-weight:600;padding:11px;border:none;border-radius:8px;background:var(--accent);color:#fff;cursor:pointer}
+  .lab{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--soft);margin:18px 0 10px}
+  .cust{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:10px}
+  .cust.due{border-left:4px solid var(--accent)}
+  .ctop{display:flex;justify-content:space-between;gap:10px}
+  .ctop b{font-size:16px}
+  .ctop .since{font-size:12px;color:var(--soft);white-space:nowrap}
+  .ctop .since.over{color:var(--accent-ink);font-weight:600}
+  .note{font-size:13px;color:var(--soft);margin-top:4px}
+  .act{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+  .act button{font:inherit;font-size:13px;font-weight:600;border:1px solid var(--line);background:var(--paper);border-radius:8px;padding:8px 12px;cursor:pointer;color:var(--ink)}
+  .act .seen{background:var(--ok);color:#fff;border-color:var(--ok)}
+  .act .rm{margin-left:auto;border:none;background:none;color:var(--soft)}
+  .msg{margin-top:12px;display:none}.msg.show{display:block}
+  .msg textarea{width:100%;font:inherit;font-size:13px;padding:11px;border:1px solid var(--line);border-radius:8px;background:var(--paper);min-height:84px;resize:vertical}
+  .msg .cp{margin-top:6px;font:inherit;font-size:13px;font-weight:600;background:var(--accent);color:#fff;border:none;border-radius:8px;padding:8px 14px;cursor:pointer}
+  .empty{padding:24px;text-align:center;color:var(--soft);font-style:italic;background:var(--card);border:1px solid var(--line);border-radius:12px}
+</style>
+</head>
+<body>
+  <h1>Rebooking Reminders</h1>
+  <div class="sub">See which customers are overdue for a visit and nudge them back · keeping regulars is cheaper than finding new ones · saved on this device</div>
+
+  <div class="add">
+    <div class="r">
+      <div><label>Customer</label><input id="nm" placeholder="Name"></div>
+      <div><label>Last visit</label><input id="last" type="date"></div>
+      <div><label>Remind after</label><input id="every" type="number" min="1" value="6" title="weeks"></div>
+    </div>
+    <div style="margin-bottom:8px"><label>Note (service, preferences)</label><input id="note" placeholder="Ladies cut + colour"></div>
+    <button class="addbtn" onclick="add()">+ Add customer</button>
+  </div>
+
+  <div id="dueWrap"></div>
+  <div id="okWrap"></div>
+
+<script>
+  const $=id=>document.getElementById(id);
+  let cs=[];try{cs=JSON.parse(localStorage.getItem('rebk')||'[]')}catch(e){cs=[]}
+  let openM=-1;
+  const DAY=86400000;
+  function save(){localStorage.setItem('rebk',JSON.stringify(cs))}
+  function add(){
+    const nm=$('nm').value.trim();if(!nm){$('nm').focus();return;}
+    cs.push({nm,last:$('last').value||new Date().toISOString().slice(0,10),
+      every:parseInt($('every').value)||6,note:$('note').value.trim()});
+    $('nm').value='';$('last').value='';$('every').value='6';$('note').value='';
+    save();render();
+  }
+  function weeksSince(d){return Math.floor((Date.now()-new Date(d+'T00:00').getTime())/(DAY*7));}
+  function isDue(c){return weeksSince(c.last)>=c.every;}
+  function markSeen(i){cs[i].last=new Date().toISOString().slice(0,10);save();render();}
+  function rm(i){cs.splice(i,1);if(openM===i)openM=-1;save();render();}
+  function toggleM(i){openM=openM===i?-1:i;render();}
+  function msgText(c){return `Hi ${c.nm}! It's been a while since your last visit — would love to have you back. Would you like to book your next ${c.note?c.note.toLowerCase():'appointment'}? Just let me know a day/time that suits you. 😊`;}
+  function copyM(i){const ta=document.getElementById('m'+i);ta.select();
+    try{navigator.clipboard.writeText(ta.value)}catch(e){try{document.execCommand('copy')}catch(e2){}}
+    const b=document.getElementById('cpm'+i);b.textContent='Copied ✓';setTimeout(()=>b.textContent='Copy message',1500);}
+  function card(c,i){
+    const w=weeksSince(c.last);const due=isDue(c);
+    return `<div class="cust${due?' due':''}">
+      <div class="ctop"><b>${esc(c.nm)}</b>
+        <span class="since${due?' over':''}">${w===0?'this week':w+'w ago'}</span></div>
+      ${c.note?`<div class="note">${esc(c.note)}</div>`:''}
+      <div class="act">
+        ${due?`<button onclick="toggleM(${i})">${openM===i?'Hide':'✉ Nudge'}</button>`:''}
+        <button class="seen" onclick="markSeen(${i})">✓ Visited today</button>
+        <button class="rm" onclick="rm(${i})">Delete</button>
+      </div>
+      ${(due&&openM===i)?`<div class="msg show"><textarea id="m${i}" readonly>${esc(msgText(c))}</textarea>
+        <button class="cp" id="cpm${i}" onclick="copyM(${i})">Copy message</button></div>`:''}
+    </div>`;
+  }
+  function render(){
+    const dueWrap=$('dueWrap'),okWrap=$('okWrap');
+    if(!cs.length){dueWrap.innerHTML='<div class="empty">No customers yet. Add your regulars above.</div>';okWrap.innerHTML='';return;}
+    let dueHtml='',okHtml='';
+    cs.forEach((c,i)=>{(isDue(c)?'':'').length;if(isDue(c))dueHtml+=card(c,i);else okHtml+=card(c,i);});
+    dueWrap.innerHTML=(dueHtml?'<div class="lab">⏰ Due for a nudge</div>'+dueHtml:'');
+    okWrap.innerHTML=(okHtml?'<div class="lab">Recently seen</div>'+okHtml:'');
+    if(!dueHtml&&!okHtml)dueWrap.innerHTML='<div class="empty">No customers yet.</div>';
+  }
+  function esc(t){return(t||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
+  render();
+</script>
+</body>
+</html>

@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Booking Confirmation</title>
+<style>
+  :root{--ink:#16252b;--soft:#4a5d63;--paper:#f7f5f0;--card:#fff;--line:#e4e0d6;
+    --accent:#d97a34;--accent-ink:#a85a1f;--ok:#2f7d5b;
+    --mono:ui-monospace,Menlo,Consolas,monospace;--sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:var(--sans);background:var(--paper);color:var(--ink);line-height:1.45;-webkit-font-smoothing:antialiased}
+  .bar{display:flex;justify-content:space-between;align-items:center;padding:13px 18px;background:var(--card);border-bottom:1px solid var(--line)}
+  .bar b{letter-spacing:-.02em}
+  .bar button{font:inherit;font-weight:600;border:none;border-radius:8px;padding:9px 16px;background:var(--accent);color:#fff;cursor:pointer}
+  .wrap{display:grid;grid-template-columns:minmax(300px,380px) 1fr}
+  @media(max-width:760px){.wrap{grid-template-columns:1fr}}
+  .panel{padding:18px;border-right:1px solid var(--line)}
+  @media(max-width:760px){.panel{border-right:none;border-bottom:1px solid var(--line)}}
+  label{display:block;font-size:12px;font-weight:600;color:var(--soft);margin:0 0 4px}
+  input,textarea{font:inherit;width:100%;padding:9px 11px;border:1px solid var(--line);border-radius:8px;background:var(--card)}
+  input.num{font-family:var(--mono);text-align:right}
+  input:focus,textarea:focus{outline:2px solid var(--accent);border-color:var(--accent)}
+  .field{margin-bottom:12px}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .lab{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--soft);margin:22px 0 10px;border-bottom:1px solid var(--line);padding-bottom:6px}
+  .stage{display:flex;justify-content:center;padding:28px}
+  @media(max-width:760px){.stage{padding:14px}}
+  .doc{width:100%;max-width:560px;background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:0 18px 40px -28px rgba(22,37,43,.5);padding:42px}
+  @media(max-width:760px){.doc{padding:26px 20px}}
+  .dhead{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;border-bottom:2px solid var(--ink);padding-bottom:16px}
+  .dhead .biz b{font-size:20px;display:block;letter-spacing:-.02em}
+  .dhead .biz small{color:var(--soft);font-size:12px}
+  .dhead .word{text-align:right}
+  .dhead .word .w{font-size:12px;font-weight:800;letter-spacing:.22em;text-transform:uppercase;color:var(--accent-ink)}
+  .dhead .word .ref{font-family:var(--mono);font-size:12px;color:var(--soft);margin-top:3px}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin:22px 0}
+  .blk .k{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--soft)}
+  .blk .v{font-size:15px;font-weight:600;margin-top:3px;white-space:pre-line}
+  .det{white-space:pre-line;font-size:14px;padding:14px 0;border-top:1px solid var(--line)}
+  .pay{margin-top:8px;border-top:1px solid var(--line)}
+  .pl{display:flex;justify-content:space-between;padding:9px 0;font-size:14px}
+  .pl .v{font-family:var(--mono)}
+  .pl.dep .v{color:var(--ok);font-weight:700}
+  .pl.bal{border-top:1.5px solid var(--ink);margin-top:6px;padding-top:12px;font-size:18px;font-weight:800}
+  .pl.bal .v{color:var(--accent-ink)}
+  .foot{margin-top:24px;font-size:12px;color:var(--soft);white-space:pre-line;border-top:1px solid var(--line);padding-top:14px}
+  @media print{@page{margin:14mm}.bar,.panel{display:none!important}.wrap{display:block}.stage{padding:0}.doc{border:none;box-shadow:none;border-radius:0;max-width:none;padding:0}}
+  html,body{overflow-x:hidden}
+</style>
+</head>
+<body>
+  <div class="bar"><b>Booking Confirmation</b><button onclick="window.print()">Save as PDF</button></div>
+  <div class="wrap">
+    <section class="panel">
+      <div class="lab">Your business</div>
+      <div class="field"><label>Business name</label><input id="biz" placeholder="Joy's Custom Cakes" oninput="r()"></div>
+      <div class="field"><label>Contact</label><input id="bizc" placeholder="9123 4567 · PayNow same" oninput="r()"></div>
+      <div class="lab">Booking</div>
+      <div class="field"><label>Customer name</label><input id="cust" placeholder="Sarah" oninput="r()"></div>
+      <div class="row2">
+        <div class="field"><label>Booking date</label><input id="bdate" type="date" oninput="r()"></div>
+        <div class="field"><label>Event / collection</label><input id="edate" type="date" oninput="r()"></div>
+      </div>
+      <div class="field"><label>Details (what's included)</label><textarea id="det" rows="3" placeholder="8-inch chocolate cake, gold theme, 'Happy 30th'" oninput="r()"></textarea></div>
+      <div class="lab">Payment</div>
+      <div class="row2">
+        <div class="field"><label>Total price</label><input id="total" class="num" type="number" min="0" step="0.01" placeholder="0.00" oninput="r()"></div>
+        <div class="field"><label>Deposit paid</label><input id="dep" class="num" type="number" min="0" step="0.01" placeholder="0.00" oninput="r()"></div>
+      </div>
+      <div class="field"><label>Terms / note</label><textarea id="note" rows="2" placeholder="Deposit non-refundable. Balance due on collection." oninput="r()"></textarea></div>
+      <div class="lab">Currency</div>
+      <div class="field"><input id="sym" value="$" style="width:70px" oninput="r()"></div>
+    </section>
+
+    <section class="stage">
+      <div class="doc" id="doc">
+        <div class="dhead">
+          <div class="biz"><b id="oBiz">Your Business</b><small id="oBizc"></small></div>
+          <div class="word"><div class="w">Confirmed</div><div class="ref" id="oRef"></div></div>
+        </div>
+        <div class="grid">
+          <div class="blk"><div class="k">Booked for</div><div class="v" id="oCust">—</div></div>
+          <div class="blk"><div class="k">Event / collection</div><div class="v" id="oEvent">—</div></div>
+        </div>
+        <div class="det" id="oDet">—</div>
+        <div class="pay">
+          <div class="pl"><span>Total</span><span class="v" id="oTotal">—</span></div>
+          <div class="pl dep"><span>Deposit received</span><span class="v" id="oDep">—</span></div>
+          <div class="pl bal"><span>Balance due</span><span class="v" id="oBal">—</span></div>
+        </div>
+        <div class="foot" id="oFoot"></div>
+      </div>
+    </section>
+  </div>
+
+<script>
+  const $=id=>document.getElementById(id);
+  const ref='BK-'+String(Date.now()).slice(-5);
+  function money(n){const s=$('sym').value||'$';return s+(n||0).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});}
+  function fd(v){if(!v)return'—';return new Date(v+'T00:00').toLocaleDateString('en-GB',{weekday:'short',day:'2-digit',month:'short',year:'numeric'});}
+  function r(){
+    $('oBiz').textContent=$('biz').value||'Your Business';
+    $('oBizc').textContent=$('bizc').value||'';
+    $('oRef').textContent='#'+ref+(($('bdate').value)?' · '+fd($('bdate').value):'');
+    $('oCust').textContent=$('cust').value||'—';
+    $('oEvent').textContent=fd($('edate').value);
+    $('oDet').textContent=$('det').value||'—';
+    const tot=parseFloat($('total').value)||0,dep=parseFloat($('dep').value)||0;
+    $('oTotal').textContent=money(tot);$('oDep').textContent=dep?'− '+money(dep):money(0);
+    $('oBal').textContent=money(Math.max(0,tot-dep));
+    $('oFoot').textContent=$('note').value||'';
+  }
+  r();
+</script>
+</body>
+</html>

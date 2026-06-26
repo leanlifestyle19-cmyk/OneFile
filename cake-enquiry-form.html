@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Cake Enquiry</title>
+<style>
+  :root{--ink:#2a1c16;--soft:#7a6a60;--paper:#fbf6f0;--card:#fff;--line:#ecdfd2;
+    --accent:#c9605f;--accent-ink:#9c3f3e;--ok:#3a7d52;
+    --serif:Georgia,"Times New Roman",serif;--sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:var(--sans);background:var(--paper);color:var(--ink);line-height:1.5;padding:24px 18px 50px;max-width:480px;margin:0 auto;-webkit-font-smoothing:antialiased}
+  .head{text-align:center;margin-bottom:8px}
+  .head h1{font-family:var(--serif);font-size:25px}
+  .head p{color:var(--soft);font-size:14px;margin-top:4px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px;margin-top:18px}
+  label{display:block;font-size:13px;font-weight:600;margin:14px 0 5px}
+  label:first-child{margin-top:0}
+  .req{color:var(--accent)}
+  input,select,textarea{font:inherit;width:100%;padding:11px;border:1px solid var(--line);border-radius:9px;background:#fff}
+  input:focus,select:focus,textarea:focus{outline:2px solid var(--accent);border-color:var(--accent)}
+  .row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .pills{display:flex;gap:8px;flex-wrap:wrap;margin-top:2px}
+  .pill{font:inherit;font-size:13px;border:1px solid var(--line);background:#fff;border-radius:20px;padding:8px 13px;cursor:pointer;color:var(--ink)}
+  .pill.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+  .go{width:100%;margin-top:18px;background:var(--accent);color:#fff;border:none;border-radius:11px;padding:14px;font:inherit;font-size:16px;font-weight:700;cursor:pointer}
+  .go:hover{background:var(--accent-ink)}
+  .out{margin-top:18px;display:none}
+  .out.show{display:block}
+  .out textarea{width:100%;min-height:180px;font-size:13px;line-height:1.6;background:#fff;border:1px solid var(--line);border-radius:10px;padding:13px;resize:vertical}
+  .cp{width:100%;margin-top:8px;background:var(--ok);color:#fff;border:none;border-radius:10px;padding:13px;font:inherit;font-weight:700;cursor:pointer}
+  .hint{font-size:12px;color:var(--soft);text-align:center;margin-top:8px}
+</style>
+</head>
+<body>
+  <div class="head">
+    <h1 id="bizName">Cake Enquiry</h1>
+    <p>Fill this in and tap to copy — then paste it to me on WhatsApp. Saves us a lot of back-and-forth!</p>
+  </div>
+
+  <div class="card">
+    <label>Your name <span class="req">*</span></label>
+    <input id="name" placeholder="Sarah">
+
+    <label>What's the occasion?</label>
+    <div class="pills" id="occ"></div>
+
+    <div class="row">
+      <div><label>Date needed <span class="req">*</span></label><input id="date" type="date"></div>
+      <div><label>How many people?</label><input id="pax" type="number" min="1" placeholder="e.g. 10"></div>
+    </div>
+
+    <label>Flavour preference</label>
+    <input id="flavour" placeholder="Chocolate, pandan, not too sweet...">
+
+    <label>Design / theme</label>
+    <textarea id="design" rows="2" placeholder="Colours, theme, message on cake, any reference pics you'll send"></textarea>
+
+    <div class="row">
+      <div><label>Budget (optional)</label><input id="budget" placeholder="e.g. $80"></div>
+      <div><label>Collect or deliver?</label><select id="fulfil"><option>Self-collect</option><option>Delivery</option><option>Not sure yet</option></select></div>
+    </div>
+
+    <button class="go" onclick="gen()">Generate my enquiry →</button>
+
+    <div class="out" id="out">
+      <textarea id="summary" readonly></textarea>
+      <button class="cp" onclick="copy()">📋 Copy &amp; paste to WhatsApp</button>
+      <div class="hint">Tip: tap copy, then open WhatsApp and paste into the chat.</div>
+    </div>
+  </div>
+
+<script>
+  const $=id=>document.getElementById(id);
+  const OCC=['Birthday','Wedding','Anniversary','Baby / kids','Corporate','Just because'];
+  let occ='';
+  $('occ').innerHTML=OCC.map(o=>`<button class="pill" onclick="pick(this,'${o}')">${o}</button>`).join('');
+  function pick(el,o){occ=o;[...$('occ').children].forEach(c=>c.classList.remove('on'));el.classList.add('on');}
+  function fd(v){if(!v)return'(not set)';return new Date(v+'T00:00').toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric'});}
+  function gen(){
+    if(!$('name').value.trim()){$('name').focus();return;}
+    const L=[];
+    L.push(`Hi! I'd like to enquire about a cake 🎂`);
+    L.push(``);
+    L.push(`• Name: ${$('name').value.trim()}`);
+    if(occ)L.push(`• Occasion: ${occ}`);
+    L.push(`• Date needed: ${fd($('date').value)}`);
+    if($('pax').value)L.push(`• Servings: ${$('pax').value} pax`);
+    if($('flavour').value.trim())L.push(`• Flavour: ${$('flavour').value.trim()}`);
+    if($('design').value.trim())L.push(`• Design: ${$('design').value.trim()}`);
+    if($('budget').value.trim())L.push(`• Budget: ${$('budget').value.trim()}`);
+    L.push(`• ${$('fulfil').value}`);
+    L.push(``);
+    L.push(`Could you let me know availability and price? Thank you!`);
+    $('summary').value=L.join('\n');
+    $('out').classList.add('show');
+    $('out').scrollIntoView({behavior:'smooth',block:'nearest'});
+  }
+  function copy(){
+    const ta=$('summary');ta.select();
+    try{navigator.clipboard.writeText(ta.value)}catch(e){try{document.execCommand('copy')}catch(e2){}}
+    const b=document.querySelector('.cp');b.textContent='Copied ✓ now paste in WhatsApp';
+    setTimeout(()=>b.textContent='📋 Copy & paste to WhatsApp',2200);
+  }
+</script>
+</body>
+</html>

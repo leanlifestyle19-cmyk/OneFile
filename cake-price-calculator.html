@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Cake Pricing</title>
+<style>
+  :root{--ink:#2a1c16;--soft:#7a6a60;--paper:#fbf6f0;--card:#fff;--line:#ecdfd2;
+    --accent:#c9605f;--accent-ink:#9c3f3e;--ok:#3a7d52;
+    --mono:ui-monospace,Menlo,Consolas,monospace;--serif:Georgia,serif;--sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:var(--sans);background:var(--paper);color:var(--ink);line-height:1.5;padding:22px 18px 50px;max-width:480px;margin:0 auto;-webkit-font-smoothing:antialiased}
+  h1{font-family:var(--serif);font-size:24px}
+  .sub{color:var(--soft);font-size:13px;margin-bottom:16px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;margin-top:14px}
+  .card h2{font-size:13px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--soft);margin-bottom:12px}
+  label{font-size:13px;font-weight:600;display:block;margin-bottom:5px}
+  .field{margin-bottom:12px}
+  input,select{font:inherit;width:100%;padding:10px 11px;border:1px solid var(--line);border-radius:9px;background:#fff}
+  input.num{font-family:var(--mono);text-align:right}
+  input:focus,select:focus{outline:2px solid var(--accent);border-color:var(--accent)}
+  .row{display:grid;grid-template-columns:1fr 100px;gap:10px;align-items:end}
+  .opt{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:9px 0;border-bottom:1px solid var(--line)}
+  .opt:last-child{border-bottom:none}
+  .opt .lab{font-size:14px}
+  .opt .ctl{display:flex;align-items:center;gap:8px}
+  .opt input[type=checkbox]{width:20px;height:20px}
+  .opt .price{font-family:var(--mono);font-size:13px;color:var(--soft);width:80px}
+  .opt .price input{padding:6px 8px;font-size:13px}
+  .result{position:sticky;bottom:0;background:var(--ink);color:#fff;border-radius:14px;padding:18px;margin-top:18px}
+  .result .bd{display:flex;justify-content:space-between;font-size:13px;padding:3px 0;color:#d8c9bd}
+  .result .bd span:last-child{font-family:var(--mono)}
+  .result .total{display:flex;justify-content:space-between;align-items:baseline;margin-top:10px;padding-top:12px;border-top:1px solid rgba(255,255,255,.2)}
+  .result .total .k{font-size:14px}
+  .result .total .v{font-family:var(--mono);font-size:30px;font-weight:800}
+  .result .perpax{font-size:12px;color:#d8c9bd;text-align:right;margin-top:4px}
+  .warn{font-size:12px;color:#ffd9a8;margin-top:8px;display:none}
+  .warn.show{display:block}
+</style>
+</head>
+<body>
+  <h1>What should I charge?</h1>
+  <div class="sub">Build the price from real costs so you stop undercharging. Numbers stay on your device.</div>
+
+  <div class="card">
+    <h2>The basics</h2>
+    <div class="field">
+      <label>Cake size / base</label>
+      <select id="base">
+        <option value="38">Bento 4" — base $38</option>
+        <option value="68" selected>Round 6" — base $68</option>
+        <option value="95">Round 8" — base $95</option>
+        <option value="140">Two-tier — base $140</option>
+        <option value="0">Custom (set cost below only)</option>
+      </select>
+    </div>
+    <div class="row">
+      <div class="field" style="margin:0"><label>Ingredient cost</label><input id="ing" class="num" type="number" min="0" step="0.5" placeholder="0.00"></div>
+      <div class="field" style="margin:0"><label>Box / packaging</label><input id="pkg" class="num" type="number" min="0" step="0.5" placeholder="0.00"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Design add-ons</h2>
+    <div id="addons"></div>
+  </div>
+
+  <div class="card">
+    <h2>Your time</h2>
+    <div class="row">
+      <div class="field" style="margin:0"><label>Hours of work</label><input id="hrs" class="num" type="number" min="0" step="0.5" placeholder="e.g. 3"></div>
+      <div class="field" style="margin:0"><label>Your rate /hr</label><input id="rate" class="num" type="number" min="0" step="1" value="15"></div>
+    </div>
+    <div class="field" style="margin-top:12px">
+      <label>Delivery fee (if any)</label><input id="del" class="num" type="number" min="0" step="1" placeholder="0">
+    </div>
+    <div class="field" style="margin:0">
+      <label>Profit margin on top</label>
+      <select id="margin">
+        <option value="0">None — cover costs only</option>
+        <option value="20">20% — modest</option>
+        <option value="35" selected>35% — healthy</option>
+        <option value="50">50% — premium / busy period</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="result">
+    <div class="bd"><span>Materials</span><span id="rMat">$0</span></div>
+    <div class="bd"><span>Labour</span><span id="rLab">$0</span></div>
+    <div class="bd"><span>Add-ons</span><span id="rAdd">$0</span></div>
+    <div class="bd"><span>Margin</span><span id="rMar">$0</span></div>
+    <div class="bd"><span>Delivery</span><span id="rDel">$0</span></div>
+    <div class="total"><span class="k">Suggested price</span><span class="v" id="rTot">$0</span></div>
+    <div class="perpax" id="rPer"></div>
+    <div class="warn" id="warn">⚠ This barely covers your costs — you're paying yourself almost nothing.</div>
+  </div>
+
+<script>
+  const $=id=>document.getElementById(id);
+  const ADDONS=[['Fondant / sugar work',15],['Fresh flowers',8],['Edible image / printing',6],['Hand-painted detail',20],['Custom topper',10],['Tiered structure',25]];
+  $('addons').innerHTML=ADDONS.map((a,i)=>`<div class="opt">
+    <span class="lab">${a[0]}</span>
+    <span class="ctl"><span class="price"><input class="num" id="ap${i}" type="number" min="0" step="1" value="${a[1]}"></span>
+    <input type="checkbox" id="ac${i}" onchange="calc()"></span></div>`).join('');
+  document.querySelectorAll('input,select').forEach(el=>el.addEventListener('input',calc));
+  const sym='$';const f=n=>sym+(Math.round(n*100)/100).toLocaleString(undefined,{minimumFractionDigits:0,maximumFractionDigits:2});
+  function num(id){return parseFloat($(id).value)||0;}
+  function calc(){
+    const base=num('base');
+    const mat=base+num('ing')+num('pkg');
+    const lab=num('hrs')*num('rate');
+    let add=0;ADDONS.forEach((a,i)=>{if($('ac'+i).checked)add+=num('ap'+i);});
+    const sub=mat+lab+add;
+    const mar=sub*(num('margin')/100);
+    const del=num('del');
+    const tot=sub+mar+del;
+    $('rMat').textContent=f(mat);$('rLab').textContent=f(lab);$('rAdd').textContent=f(add);
+    $('rMar').textContent=f(mar);$('rDel').textContent=f(del);$('rTot').textContent=f(tot);
+    const pax={38:2,68:8,95:15,140:30}[base];
+    $('rPer').textContent=pax?`≈ ${f((tot-del)/pax)} per serving`:'';
+    $('warn').classList.toggle('show', (mat+add)>0 && lab>0 && mar< (lab*0.15));
+  }
+  calc();
+</script>
+</body>
+</html>

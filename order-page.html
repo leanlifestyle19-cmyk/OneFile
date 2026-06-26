@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Order Page</title>
+<style>
+  :root{--ink:#2a1c16;--soft:#7a6a60;--paper:#fbf6f0;--card:#fff;--line:#ecdfd2;
+    --accent:#c9605f;--accent-ink:#9c3f3e;--gold:#b8893b;
+    --serif:Georgia,"Times New Roman",serif;--sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:var(--sans);background:var(--paper);color:var(--ink);line-height:1.5;-webkit-font-smoothing:antialiased}
+  .edit{position:fixed;top:12px;right:12px;z-index:50;background:var(--ink);color:#fff;border:none;border-radius:20px;padding:8px 14px;font:inherit;font-size:13px;font-weight:600;cursor:pointer;opacity:.9}
+  .page{max-width:440px;margin:0 auto;padding:34px 22px 60px}
+  .hero{text-align:center}
+  .avatar{width:84px;height:84px;border-radius:50%;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-family:var(--serif);font-size:34px;margin:0 auto 14px}
+  .name{font-family:var(--serif);font-size:27px;letter-spacing:-.01em}
+  .tagline{color:var(--soft);font-size:14px;margin-top:6px}
+  .chips{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:14px}
+  .chip{font-size:12px;font-weight:600;background:#fff;border:1px solid var(--line);border-radius:20px;padding:6px 12px;color:var(--accent-ink)}
+  .sec{margin-top:30px}
+  .sec h2{font-family:var(--serif);font-size:17px;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+  .sec h2::after{content:"";flex:1;height:1px;background:var(--line)}
+  .menu .item{display:flex;justify-content:space-between;gap:14px;padding:11px 0;border-bottom:1px solid var(--line)}
+  .menu .item .nm b{display:block;font-size:15px}
+  .menu .item .nm span{font-size:12px;color:var(--soft)}
+  .menu .item .pr{font-weight:700;color:var(--accent-ink);white-space:nowrap}
+  .steps{counter-reset:s}
+  .steps li{list-style:none;position:relative;padding:8px 0 8px 36px;font-size:14px}
+  .steps li::before{counter-increment:s;content:counter(s);position:absolute;left:0;top:7px;width:24px;height:24px;background:var(--accent);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700}
+  .note{background:#fff;border:1px solid var(--line);border-left:3px solid var(--gold);border-radius:0 10px 10px 0;padding:12px 14px;font-size:13px;color:var(--soft);margin-top:14px}
+  .cta{display:block;text-align:center;background:var(--accent);color:#fff;text-decoration:none;font-weight:700;padding:15px;border-radius:12px;margin-top:30px;font-size:16px}
+  .cta:hover{background:var(--accent-ink)}
+  .paynow{text-align:center;font-size:13px;color:var(--soft);margin-top:14px}
+  .paynow b{color:var(--ink)}
+  /* editor */
+  .panel{position:fixed;inset:0;background:rgba(20,12,8,.5);z-index:60;display:none;align-items:flex-start;justify-content:center;padding:20px;overflow:auto}
+  .panel.open{display:flex}
+  .sheet{background:#fff;border-radius:16px;max-width:440px;width:100%;padding:20px;margin:auto}
+  .sheet h3{font-family:var(--serif);font-size:20px;margin-bottom:14px}
+  label{display:block;font-size:12px;font-weight:600;color:var(--soft);margin:10px 0 4px}
+  input,textarea{font:inherit;width:100%;padding:9px 11px;border:1px solid var(--line);border-radius:8px}
+  input:focus,textarea:focus{outline:2px solid var(--accent);border-color:var(--accent)}
+  .mrow{display:grid;grid-template-columns:1fr 80px 28px;gap:6px;margin-bottom:6px}
+  .mrow input{padding:8px}
+  .delm{border:1px solid var(--line);background:#fff;border-radius:8px;cursor:pointer;color:var(--soft)}
+  .addm{width:100%;padding:8px;border:1px dashed var(--line);border-radius:8px;background:transparent;color:var(--accent-ink);font:inherit;font-weight:600;cursor:pointer;margin-top:4px}
+  .done{width:100%;margin-top:16px;background:var(--ink);color:#fff;border:none;border-radius:10px;padding:12px;font:inherit;font-weight:700;cursor:pointer}
+</style>
+</head>
+<body>
+  <button class="edit" onclick="openEd()">✎ Edit my page</button>
+
+  <div class="page">
+    <div class="hero">
+      <div class="avatar" id="vAv">J</div>
+      <div class="name" id="vName">Joy's Bakes</div>
+      <div class="tagline" id="vTag">Custom cakes & bakes, baked fresh in a home kitchen</div>
+      <div class="chips" id="vChips"></div>
+    </div>
+
+    <div class="sec menu">
+      <h2>Menu &amp; prices</h2>
+      <div id="vMenu"></div>
+    </div>
+
+    <div class="sec">
+      <h2>How to order</h2>
+      <ol class="steps" id="vSteps"></ol>
+      <div class="note" id="vLead"></div>
+    </div>
+
+    <a class="cta" id="vCta" href="#">Order on WhatsApp →</a>
+    <div class="paynow" id="vPay"></div>
+  </div>
+
+  <!-- EDITOR -->
+  <div class="panel" id="panel">
+    <div class="sheet">
+      <h3>Edit your order page</h3>
+      <label>Bakery name</label><input id="eName">
+      <label>Tagline</label><input id="eTag">
+      <label>Highlights (comma separated)</label><input id="eChips" placeholder="Halal-friendly, Islandwide delivery, 3-day lead time">
+      <label>Menu</label>
+      <div id="eMenu"></div>
+      <button class="addm" onclick="addM()">+ Add menu item</button>
+      <label>Lead-time note</label><input id="eLead" placeholder="Please order at least 5 days ahead. Deposit required to confirm.">
+      <label>WhatsApp number (for order button)</label><input id="eWa" placeholder="6591234567">
+      <label>PayNow detail</label><input id="ePay" placeholder="PayNow: 9123 4567">
+      <button class="done" onclick="saveEd()">Save page</button>
+    </div>
+  </div>
+
+<script>
+  const $=id=>document.getElementById(id);
+  const DEF={name:"Joy's Bakes",tag:"Custom cakes & bakes, baked fresh in a home kitchen",
+    chips:["Halal-friendly","Islandwide delivery","5-day lead time"],
+    menu:[{n:"Bento cake (4\")",d:"1–2 pax, any colour",p:"$38"},{n:"Custom cake (6\")",d:"design + flavour of choice",p:"from $68"},{n:"Cupcakes (box of 6)",d:"buttercream, mixed flavours",p:"$30"}],
+    lead:"Please order at least 5 days ahead. A 50% deposit confirms your slot.",
+    wa:"",pay:"PayNow: 9123 4567"};
+  let d=DEF;try{const s=localStorage.getItem('shop');if(s)d=JSON.parse(s);}catch(e){}
+  function render(){
+    $('vAv').textContent=(d.name||'B').trim()[0]||'B';
+    $('vName').textContent=d.name;$('vTag').textContent=d.tag;
+    $('vChips').innerHTML=(d.chips||[]).filter(Boolean).map(c=>`<span class="chip">${esc(c.trim())}</span>`).join('');
+    $('vMenu').innerHTML=(d.menu||[]).map(m=>`<div class="item"><div class="nm"><b>${esc(m.n)}</b><span>${esc(m.d)}</span></div><div class="pr">${esc(m.p)}</div></div>`).join('');
+    $('vSteps').innerHTML=['DM me your design idea, date & servings','I confirm price & availability','Pay deposit to lock your slot','Collect or get it delivered fresh'].map(s=>`<li>${s}</li>`).join('');
+    $('vLead').textContent=d.lead;
+    $('vCta').href=d.wa?`https://wa.me/${d.wa.replace(/\D/g,'')}`:'#';
+    $('vPay').innerHTML=d.pay?`<b>${esc(d.pay)}</b>`:'';
+  }
+  function openEd(){
+    $('eName').value=d.name;$('eTag').value=d.tag;$('eChips').value=(d.chips||[]).join(', ');
+    $('eLead').value=d.lead;$('eWa').value=d.wa||'';$('ePay').value=d.pay||'';
+    $('eMenu').innerHTML='';(d.menu||[]).forEach(m=>addM(m.n,m.d,m.p));
+    $('panel').classList.add('open');
+  }
+  function addM(n='',dd='',p=''){
+    const row=document.createElement('div');row.className='mrow';
+    row.innerHTML=`<input placeholder="Item" value="${esc(n)}"><input placeholder="$" value="${esc(p)}"><button class="delm" onclick="this.parentNode.remove()">×</button>`;
+    const desc=document.createElement('input');desc.placeholder='short description';desc.value=dd;desc.className='mdesc';
+    row.appendChild(desc);row.style.gridTemplateColumns='1fr 80px 28px';
+    const wrap=document.createElement('div');wrap.style.marginBottom='8px';wrap.appendChild(row);
+    desc.style.gridColumn='1/4';desc.style.marginTop='6px';desc.style.padding='8px';
+    $('eMenu').appendChild(wrap);
+  }
+  function saveEd(){
+    const menu=[...$('eMenu').children].map(w=>{
+      const ins=w.querySelectorAll('input');
+      return {n:ins[0].value,p:ins[1].value,d:w.querySelector('.mdesc').value};
+    }).filter(m=>m.n);
+    d={name:$('eName').value||"My Bakes",tag:$('eTag').value,chips:$('eChips').value.split(','),
+      menu,lead:$('eLead').value,wa:$('eWa').value,pay:$('ePay').value};
+    localStorage.setItem('shop',JSON.stringify(d));
+    $('panel').classList.remove('open');render();
+  }
+  function esc(t){return(t||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
+  render();
+</script>
+</body>
+</html>

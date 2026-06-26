@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Day Sheet</title>
+<style>
+  :root{--ink:#16252b;--soft:#4a5d63;--paper:#f7f5f0;--card:#fff;--line:#e4e0d6;
+    --accent:#d97a34;--accent-ink:#a85a1f;--ok:#2f7d5b;--no:#b53b2e;
+    --mono:ui-monospace,Menlo,Consolas,monospace;--sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:var(--sans);background:var(--paper);color:var(--ink);line-height:1.45;padding:18px 16px;max-width:580px;margin:0 auto;-webkit-font-smoothing:antialiased}
+  .head{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:16px;gap:12px}
+  h1{font-size:21px;letter-spacing:-.02em}
+  .head input{font:inherit;border:1px solid var(--line);border-radius:8px;padding:7px 10px;background:var(--card)}
+  .printbtn{font:inherit;font-weight:600;border:none;border-radius:8px;padding:9px 15px;background:var(--accent);color:#fff;cursor:pointer}
+  .entry{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:16px;display:grid;grid-template-columns:96px 1fr;gap:8px}
+  .entry input{font:inherit;width:100%;padding:9px 10px;border:1px solid var(--line);border-radius:8px}
+  .entry input:focus{outline:2px solid var(--accent);border-color:var(--accent)}
+  .entry .full{grid-column:1/3}
+  .addbtn{grid-column:1/3;font:inherit;font-weight:600;padding:10px;border:none;border-radius:8px;background:var(--accent);color:#fff;cursor:pointer}
+  .sheet{background:var(--card);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+  .ap{display:grid;grid-template-columns:64px 1fr auto;gap:12px;align-items:center;padding:13px 14px;border-bottom:1px solid var(--line)}
+  .ap:last-child{border-bottom:none}
+  .ap .tm{font-family:var(--mono);font-weight:700;font-size:15px}
+  .ap .who b{display:block}.ap .who span{font-size:12px;color:var(--soft)}
+  .ap.done{opacity:.55}.ap.done .who b{text-decoration:line-through}
+  .ap .st{display:flex;gap:6px}
+  .ap .st button{font:inherit;font-size:11px;font-weight:700;border:1px solid var(--line);background:var(--paper);border-radius:6px;padding:5px 7px;cursor:pointer;color:var(--soft)}
+  .ap .st button.on.d{background:var(--ok);color:#fff;border-color:var(--ok)}
+  .ap .st button.on.n{background:var(--no);color:#fff;border-color:var(--no)}
+  .ap .x{background:none;border:none;color:var(--soft);cursor:pointer;font-size:16px}
+  .empty{padding:26px;text-align:center;color:var(--soft);font-style:italic}
+  @media print{@page{margin:14mm}.entry,.printbtn,.ap .st,.ap .x,.head input{display:none!important}
+    .sheet{border:none}.ap{grid-template-columns:64px 1fr}}
+</style>
+</head>
+<body>
+  <div class="head">
+    <div><h1 id="biz">Today's Appointments</h1></div>
+    <div style="display:flex;gap:8px;align-items:center">
+      <input id="bizName" placeholder="Business name" oninput="saveBiz()">
+      <button class="printbtn" onclick="window.print()">Print</button>
+    </div>
+  </div>
+  <div class="entry">
+    <input id="tm" type="time">
+    <input id="who" placeholder="Client name">
+    <input id="svc" class="full" placeholder="Service / note (e.g. Haircut, P5 Math)">
+    <button class="addbtn" onclick="add()">+ Add appointment</button>
+  </div>
+  <div class="sheet" id="sheet"></div>
+<script>
+  const $=id=>document.getElementById(id);
+  const key='day_'+new Date().toISOString().slice(0,10);
+  let aps=[];try{aps=JSON.parse(localStorage.getItem(key)||'[]')}catch(e){aps=[]}
+  $('bizName').value=localStorage.getItem('day_biz')||'';
+  $('biz').textContent=($('bizName').value||'Today')+' · '+new Date().toLocaleDateString('en-GB',{weekday:'short',day:'2-digit',month:'short'});
+  function saveBiz(){localStorage.setItem('day_biz',$('bizName').value);
+    $('biz').textContent=($('bizName').value||'Today')+' · '+new Date().toLocaleDateString('en-GB',{weekday:'short',day:'2-digit',month:'short'});}
+  function save(){localStorage.setItem(key,JSON.stringify(aps))}
+  function add(){
+    if(!$('who').value.trim())return;
+    aps.push({tm:$('tm').value||'',who:$('who').value.trim(),svc:$('svc').value.trim(),st:''});
+    aps.sort((a,b)=>(a.tm||'~').localeCompare(b.tm||'~'));
+    $('tm').value='';$('who').value='';$('svc').value='';save();render();
+  }
+  function setSt(i,s){aps[i].st=aps[i].st===s?'':s;save();render();}
+  function del(i){aps.splice(i,1);save();render();}
+  function render(){
+    const s=$('sheet');
+    if(!aps.length){s.innerHTML='<div class="empty">No appointments yet.</div>';return;}
+    s.innerHTML='';
+    aps.forEach((a,i)=>{
+      const d=document.createElement('div');d.className='ap'+(a.st==='done'?' done':'');
+      d.innerHTML=`<div class="tm">${a.tm||'—'}</div>
+        <div class="who"><b>${esc(a.who)}</b><span>${esc(a.svc)||''}</span></div>
+        <div style="display:flex;align-items:center;gap:8px"><div class="st">
+        <button class="d ${a.st==='done'?'on':''}" onclick="setSt(${i},'done')">Done</button>
+        <button class="n ${a.st==='no'?'on':''}" onclick="setSt(${i},'no')">No-show</button></div>
+        <button class="x" onclick="del(${i})">×</button></div>`;
+      s.appendChild(d);
+    });
+  }
+  function esc(t){return(t||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
+  render();
+</script>
+</body>
+</html>

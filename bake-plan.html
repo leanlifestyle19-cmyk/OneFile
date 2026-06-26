@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Bake Plan</title>
+<style>
+  :root{--ink:#2a1c16;--soft:#7a6a60;--paper:#fbf6f0;--card:#fff;--line:#ecdfd2;
+    --accent:#c9605f;--accent-ink:#9c3f3e;--ok:#3a7d52;--blue:#3a6d8c;
+    --mono:ui-monospace,Menlo,Consolas,monospace;--serif:Georgia,serif;--sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:var(--sans);background:var(--paper);color:var(--ink);line-height:1.5;padding:20px 16px 50px;max-width:580px;margin:0 auto;-webkit-font-smoothing:antialiased}
+  h1{font-family:var(--serif);font-size:23px}
+  .sub{color:var(--soft);font-size:13px;margin-bottom:16px}
+  .cap{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center;font-size:14px}
+  .cap b{font-family:var(--mono)}
+  .cap.full{border-color:var(--accent);background:#fdf0ef;color:var(--accent-ink)}
+  .add{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:16px}
+  .add .r{display:grid;grid-template-columns:1fr 70px;gap:8px;margin-bottom:8px}
+  label{font-size:11px;font-weight:600;color:var(--soft);display:block;margin-bottom:3px}
+  input{font:inherit;width:100%;padding:10px 11px;border:1px solid var(--line);border-radius:8px;background:#fff}
+  input:focus{outline:2px solid var(--accent);border-color:var(--accent)}
+  .addbtn{width:100%;background:var(--accent);color:#fff;border:none;border-radius:9px;padding:11px;font:inherit;font-weight:700;cursor:pointer}
+  .tabs{display:flex;gap:8px;margin:16px 0 12px}
+  .tabs button{flex:1;font:inherit;font-weight:600;padding:9px;border:1px solid var(--line);background:#fff;border-radius:9px;cursor:pointer;color:var(--soft)}
+  .tabs button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .day{margin-bottom:14px}
+  .day h3{font-size:13px;font-weight:700;color:var(--blue);margin-bottom:6px;display:flex;align-items:center;gap:8px}
+  .day h3::after{content:"";flex:1;height:1px;background:var(--line)}
+  .task{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:11px 13px;margin-bottom:7px;display:flex;justify-content:space-between;align-items:center;gap:10px}
+  .task.bake{border-left:3px solid var(--accent)}
+  .task .t b{display:block;font-size:14px}.task .t span{font-size:12px;color:var(--soft)}
+  .task .due{font-size:11px;font-weight:700;color:var(--accent-ink);white-space:nowrap}
+  .task .x{border:none;background:none;color:var(--soft);font-size:15px;cursor:pointer}
+  .shop .si{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--line)}
+  .shop .si input{width:20px;height:20px}
+  .shop .si label{font-size:14px;color:var(--ink);margin:0;font-weight:400}
+  .empty{padding:24px;text-align:center;color:var(--soft);font-style:italic;background:var(--card);border:1px solid var(--line);border-radius:12px}
+  .note{font-size:12px;color:var(--soft);margin-top:6px}
+</style>
+</head>
+<body>
+  <h1>This week's bakes</h1>
+  <div class="sub">Turn your confirmed orders into a day-by-day plan and one shopping list. Saved on this device.</div>
+
+  <div class="cap" id="cap"><span>Orders this week</span><span><b id="capN">0</b> / <input id="capMax" type="number" min="1" value="6" style="width:46px;font-family:var(--mono);padding:4px;text-align:center;border:1px solid var(--line);border-radius:6px" onchange="render()"> quota</span></div>
+
+  <div class="add">
+    <div class="r">
+      <div><label>Order (item + customer)</label><input id="item" placeholder="6\" choc cake — Sarah"></div>
+      <div><label>Prep hrs</label><input id="hrs" type="number" min="0" step="0.5" placeholder="3"></div>
+    </div>
+    <div class="r">
+      <div><label>Due date</label><input id="due" type="date"></div>
+      <div><label></label><button class="addbtn" onclick="add()">Add</button></div>
+    </div>
+    <div><label>Key ingredients (comma separated)</label><input id="ings" placeholder="eggs, dark chocolate, cream, flour"></div>
+  </div>
+
+  <div class="tabs">
+    <button id="tPlan" class="on" onclick="tab('plan')">Bake plan</button>
+    <button id="tShop" onclick="tab('shop')">Shopping list</button>
+  </div>
+
+  <div id="view"></div>
+
+<script>
+  const $=id=>document.getElementById(id);
+  let orders=[];try{orders=JSON.parse(localStorage.getItem('bakeplan')||'[]')}catch(e){orders=[]}
+  let mode='plan';const DAY=86400000;
+  function save(){localStorage.setItem('bakeplan',JSON.stringify(orders))}
+  function add(){
+    if(!$('item').value.trim()){$('item').focus();return;}
+    orders.push({item:$('item').value.trim(),hrs:parseFloat($('hrs').value)||0,due:$('due').value||'',
+      ings:$('ings').value.split(',').map(s=>s.trim()).filter(Boolean)});
+    $('item').value='';$('hrs').value='';$('due').value='';$('ings').value='';
+    save();render();
+  }
+  function rm(i){orders.splice(i,1);save();render();}
+  function tab(m){mode=m;$('tPlan').className=m==='plan'?'on':'';$('tShop').className=m==='shop'?'on':'';render();}
+  function fdShort(d){if(!d)return'no date';return new Date(d+'T00:00').toLocaleDateString('en-GB',{weekday:'short',day:'2-digit',month:'short'});}
+  function render(){
+    $('capN').textContent=orders.length;
+    const max=parseInt($('capMax').value)||6;
+    $('cap').classList.toggle('full',orders.length>=max);
+    const v=$('view');
+    if(!orders.length){v.innerHTML='<div class="empty">No orders yet. Add your confirmed orders above.</div>';return;}
+    if(mode==='shop'){
+      const map={};
+      orders.forEach(o=>o.ings.forEach(g=>{const k=g.toLowerCase();map[k]=(map[k]||0)+1;}));
+      const keys=Object.keys(map).sort();
+      v.innerHTML=`<div class="shop card" style="padding:14px">${keys.length?keys.map((k,i)=>
+        `<div class="si"><input type="checkbox" id="sc${i}"><label for="sc${i}">${esc(k)}${map[k]>1?` <span style="color:var(--soft)">×${map[k]} orders</span>`:''}</label></div>`).join('')
+        :'<div style="color:var(--soft);font-style:italic">No ingredients listed yet.</div>'}</div>
+        <div class="note">Consolidated from all orders. Tick as you shop — list resets when you reload.</div>`;
+      return;
+    }
+    const groups={};
+    orders.forEach((o,i)=>{
+      let key='No date set';
+      if(o.due){const bake=new Date(new Date(o.due+'T00:00').getTime()-DAY);key=bake.toISOString().slice(0,10);}
+      (groups[key]=groups[key]||[]).push({...o,i});
+    });
+    const dated=Object.keys(groups).filter(k=>k!=='No date set').sort();
+    const order=[...dated,...(groups['No date set']?['No date set']:[])];
+    v.innerHTML=order.map(k=>{
+      const head=k==='No date set'?'⚠ No date set':('Bake on '+fdShort(k));
+      return `<div class="day"><h3>${head}</h3>${groups[k].map(o=>
+        `<div class="task bake"><div class="t"><b>${esc(o.item)}</b><span>${o.hrs?o.hrs+'h prep · ':''}${o.ings.length?o.ings.length+' ingredients':'no ingredients listed'}</span></div>
+        <div style="display:flex;align-items:center;gap:8px"><span class="due">due ${fdShort(o.due)}</span><button class="x" onclick="rm(${o.i})">×</button></div></div>`
+      ).join('')}</div>`;
+    }).join('');
+  }
+  function esc(t){return(t||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
+  render();
+</script>
+</body>
+</html>

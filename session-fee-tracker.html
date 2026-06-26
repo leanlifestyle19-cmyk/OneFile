@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Session & Fee Tracker</title>
+<style>
+  :root{--ink:#16252b;--soft:#4a5d63;--paper:#f7f5f0;--card:#fff;--line:#e4e0d6;
+    --accent:#d97a34;--accent-ink:#a85a1f;--ok:#2f7d5b;--no:#b53b2e;
+    --mono:ui-monospace,Menlo,Consolas,monospace;--sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:var(--sans);background:var(--paper);color:var(--ink);line-height:1.45;padding:18px 16px;max-width:600px;margin:0 auto;-webkit-font-smoothing:antialiased}
+  h1{font-size:21px;letter-spacing:-.02em}
+  .sub{color:var(--soft);font-size:13px;margin-bottom:18px}
+  .add{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:18px}
+  .add .r{display:grid;grid-template-columns:1fr 110px;gap:8px;margin-bottom:8px}
+  input,select{font:inherit;width:100%;padding:10px 11px;border:1px solid var(--line);border-radius:8px;background:var(--card)}
+  input.num{font-family:var(--mono);text-align:right}
+  input:focus,select:focus{outline:2px solid var(--accent);border-color:var(--accent)}
+  .addbtn{width:100%;font:inherit;font-weight:600;padding:11px;border:none;border-radius:8px;background:var(--accent);color:#fff;cursor:pointer}
+  .student{background:var(--card);border:1px solid var(--line);border-radius:12px;margin-bottom:14px;overflow:hidden}
+  .shead{display:flex;justify-content:space-between;align-items:center;padding:14px;cursor:pointer}
+  .shead b{font-size:16px}
+  .owe{font-family:var(--mono);font-weight:700}
+  .owe.due{color:var(--no)}.owe.clear{color:var(--ok)}
+  .slist{border-top:1px solid var(--line);display:none}
+  .slist.open{display:block}
+  .ses{display:flex;justify-content:space-between;align-items:center;padding:11px 14px;border-bottom:1px solid var(--line);gap:10px}
+  .ses:last-child{border-bottom:none}
+  .ses .d{font-size:13px}.ses .d span{color:var(--soft);font-size:12px;display:block}
+  .ses .amt{font-family:var(--mono);font-weight:600}
+  .ses .paid{font:inherit;font-size:11px;font-weight:700;border:1px solid var(--line);border-radius:6px;padding:5px 8px;cursor:pointer;background:var(--paper);color:var(--soft)}
+  .ses .paid.on{background:var(--ok);color:#fff;border-color:var(--ok)}
+  .ses .x{background:none;border:none;color:var(--soft);cursor:pointer;font-size:15px}
+  .addses{width:calc(100% - 28px);margin:10px 14px;padding:9px;border:1px dashed var(--line);border-radius:8px;background:transparent;color:var(--accent-ink);font:inherit;font-weight:600;cursor:pointer}
+  .empty{padding:26px;text-align:center;color:var(--soft);font-style:italic;background:var(--card);border:1px solid var(--line);border-radius:12px}
+</style>
+</head>
+<body>
+  <h1 id="title">Session & Fee Tracker</h1>
+  <div class="sub" id="sub">Track lessons per student and what's owed · saved on this device</div>
+  <div class="add">
+    <div class="r">
+      <input id="sName" placeholder="New student name">
+      <input id="sRate" class="num" type="number" min="0" step="0.01" placeholder="Rate/session">
+    </div>
+    <button class="addbtn" onclick="addStudent()">+ Add student</button>
+  </div>
+  <div id="list"></div>
+<script>
+  const $=id=>document.getElementById(id);
+  let data=[];try{data=JSON.parse(localStorage.getItem('sft')||'[]')}catch(e){data=[]}
+  let open=-1;const sym='$';
+  const fmt=n=>sym+n.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});
+  function save(){localStorage.setItem('sft',JSON.stringify(data))}
+  function addStudent(){
+    const n=$('sName').value.trim();if(!n)return;
+    data.push({n,rate:parseFloat($('sRate').value)||0,ses:[]});
+    $('sName').value='';$('sRate').value='';save();render();
+  }
+  function addSes(i){
+    const today=new Date().toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'2-digit'});
+    data[i].ses.unshift({date:today,amt:data[i].rate,paid:false});save();render();
+  }
+  function togPaid(i,j){data[i].ses[j].paid=!data[i].ses[j].paid;save();render();}
+  function delSes(i,j){data[i].ses.splice(j,1);save();render();}
+  function delStudent(i){if(confirm('Remove '+data[i].n+'?')){data.splice(i,1);save();render();}}
+  function toggle(i){open=open===i?-1:i;render();}
+  function render(){
+    const l=$('list');
+    if(!data.length){l.innerHTML='<div class="empty">No students yet. Add one above.</div>';return;}
+    l.innerHTML='';
+    data.forEach((s,i)=>{
+      const due=s.ses.filter(x=>!x.paid).reduce((a,x)=>a+x.amt,0);
+      const card=document.createElement('div');card.className='student';
+      let rows='';
+      s.ses.forEach((x,j)=>{rows+=`<div class="ses">
+        <div class="d">${esc(x.date)}<span>${fmt(x.amt)}</span></div>
+        <div style="display:flex;align-items:center;gap:8px">
+        <button class="paid ${x.paid?'on':''}" onclick="event.stopPropagation();togPaid(${i},${j})">${x.paid?'Paid':'Unpaid'}</button>
+        <button class="x" onclick="event.stopPropagation();delSes(${i},${j})">×</button></div></div>`;});
+      card.innerHTML=`<div class="shead" onclick="toggle(${i})">
+        <div><b>${esc(s.n)}</b> <span style="color:var(--soft);font-size:13px">· ${fmt(s.rate)}/session · ${s.ses.length} sessions</span></div>
+        <span class="owe ${due>0?'due':'clear'}">${due>0?fmt(due)+' due':'cleared'}</span></div>
+        <div class="slist ${open===i?'open':''}">${rows}
+        <button class="addses" onclick="addSes(${i})">+ Log a session</button>
+        <button class="addses" style="color:var(--no);border-color:#e6b6b0" onclick="delStudent(${i})">Remove student</button></div>`;
+      l.appendChild(card);
+    });
+  }
+  function esc(t){return(t||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
+  render();
+</script>
+</body>
+</html>

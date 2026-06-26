@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Reviews</title>
+<style>
+  :root{--ink:#2a1c16;--soft:#7a6a60;--paper:#fbf6f0;--card:#fff;--line:#ecdfd2;
+    --accent:#c9605f;--accent-ink:#9c3f3e;--ok:#3a7d52;--gold:#d59b32;
+    --serif:Georgia,serif;--sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:var(--sans);background:var(--paper);color:var(--ink);line-height:1.5;padding:20px 16px 50px;max-width:520px;margin:0 auto;-webkit-font-smoothing:antialiased}
+  h1{font-family:var(--serif);font-size:23px}
+  .sub{color:var(--soft);font-size:13px;margin-bottom:16px}
+  .tabs{display:flex;gap:8px;margin-bottom:14px}
+  .tabs button{flex:1;font:inherit;font-weight:600;padding:10px;border:1px solid var(--line);background:#fff;border-radius:9px;cursor:pointer;color:var(--soft)}
+  .tabs button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:13px;padding:16px;margin-bottom:12px}
+  label{font-size:12px;font-weight:600;color:var(--soft);display:block;margin:10px 0 4px}
+  label:first-child{margin-top:0}
+  input,textarea{font:inherit;width:100%;padding:10px 11px;border:1px solid var(--line);border-radius:9px;background:#fff}
+  input:focus,textarea:focus{outline:2px solid var(--accent);border-color:var(--accent)}
+  .row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .btn{width:100%;border:none;border-radius:10px;padding:12px;font:inherit;font-weight:700;cursor:pointer;margin-top:14px}
+  .btn.accent{background:var(--accent);color:#fff}
+  .btn.ok{background:var(--ok);color:#fff}
+  .out{margin-top:14px;display:none}.out.show{display:block}
+  .out textarea{min-height:120px;font-size:13px;line-height:1.6}
+  .stars{display:flex;gap:4px;margin-top:4px}
+  .stars span{font-size:26px;cursor:pointer;color:var(--line)}
+  .stars span.on{color:var(--gold)}
+  .tcard{background:var(--card);border:1px solid var(--line);border-radius:13px;padding:15px;margin-bottom:10px}
+  .tcard .rate{color:var(--gold);font-size:15px;letter-spacing:2px}
+  .tcard .quote{font-family:var(--serif);font-size:15px;margin:6px 0;line-height:1.55}
+  .tcard .who{font-size:12px;color:var(--soft)}
+  .tcard .x{float:right;border:none;background:none;color:var(--soft);cursor:pointer;font-size:15px}
+  .empty{padding:24px;text-align:center;color:var(--soft);font-style:italic;background:var(--card);border:1px solid var(--line);border-radius:13px}
+  .hint{font-size:12px;color:var(--soft);margin-top:8px}
+</style>
+</head>
+<body>
+  <h1>Reviews & word of mouth</h1>
+  <div class="sub">Ask happy customers for a review, and keep their kind words to re-share. Reviews are what bring the next order.</div>
+
+  <div class="tabs">
+    <button id="tAsk" class="on" onclick="tab('ask')">Ask for a review</button>
+    <button id="tSave" onclick="tab('save')">My testimonials</button>
+  </div>
+
+  <div id="askView">
+    <div class="card">
+      <label>Customer name</label><input id="cName" placeholder="Sarah">
+      <label>What did they order?</label><input id="cItem" placeholder="birthday cake">
+      <label>Where should they leave it? (optional)</label><input id="cWhere" placeholder="Google / your Instagram">
+      <button class="btn accent" onclick="genAsk()">Generate thank-you + ask →</button>
+      <div class="out" id="askOut">
+        <textarea id="askMsg" readonly></textarea>
+        <button class="btn ok" onclick="copyAsk()">📋 Copy message</button>
+        <div class="hint">Send this a day or two after they collect — when they're happiest.</div>
+      </div>
+    </div>
+  </div>
+
+  <div id="saveView" style="display:none">
+    <div class="card">
+      <label>Their words</label><textarea id="tQuote" rows="3" placeholder="Paste what they sent you, or type it in"></textarea>
+      <div class="row">
+        <div><label>From</label><input id="tWho" placeholder="Sarah, birthday cake"></div>
+        <div><label>Rating</label><div class="stars" id="stars"></div></div>
+      </div>
+      <button class="btn accent" onclick="saveT()">Save testimonial</button>
+    </div>
+    <div id="tList"></div>
+  </div>
+
+<script>
+  const $=id=>document.getElementById(id);
+  let mode='ask',rating=5;
+  let ts=[];try{ts=JSON.parse(localStorage.getItem('testi')||'[]')}catch(e){ts=[]}
+  function tab(m){mode=m;$('tAsk').className=m==='ask'?'on':'';$('tSave').className=m==='save'?'on':'';
+    $('askView').style.display=m==='ask'?'block':'none';$('saveView').style.display=m==='save'?'block':'none';
+    if(m==='save')renderT();}
+  function genAsk(){
+    const n=$('cName').value.trim()||'there';const it=$('cItem').value.trim();const w=$('cWhere').value.trim();
+    let m=`Hi ${n}! It was such a pleasure making your ${it||'order'} 😊 I hope everyone enjoyed it!`;
+    m+=`\n\nIf you have a moment, a short review would mean the world to a small home baker like me`;
+    m+=w?` — you can leave one here: ${w}.`:`.`;
+    m+=`\n\nAnd do tag me if you took any photos! Thank you so much for your support 🙏`;
+    $('askMsg').value=m;$('askOut').classList.add('show');
+  }
+  function copyAsk(){const ta=$('askMsg');ta.select();
+    try{navigator.clipboard.writeText(ta.value)}catch(e){try{document.execCommand('copy')}catch(e2){}}
+    const b=event.target;b.textContent='Copied ✓';setTimeout(()=>b.textContent='📋 Copy message',1600);}
+  function renderStars(){$('stars').innerHTML=[1,2,3,4,5].map(n=>`<span class="${n<=rating?'on':''}" onclick="setR(${n})">★</span>`).join('');}
+  function setR(n){rating=n;renderStars();}
+  function saveT(){
+    const q=$('tQuote').value.trim();if(!q){$('tQuote').focus();return;}
+    ts.unshift({q,who:$('tWho').value.trim(),r:rating});
+    localStorage.setItem('testi',JSON.stringify(ts));
+    $('tQuote').value='';$('tWho').value='';rating=5;renderStars();renderT();
+  }
+  function delT(i){ts.splice(i,1);localStorage.setItem('testi',JSON.stringify(ts));renderT();}
+  function renderT(){
+    const l=$('tList');
+    if(!ts.length){l.innerHTML='<div class="empty">No testimonials saved yet.</div>';return;}
+    l.innerHTML=ts.map((t,i)=>`<div class="tcard">
+      <button class="x" onclick="delT(${i})">×</button>
+      <div class="rate">${'★'.repeat(t.r)}${'☆'.repeat(5-t.r)}</div>
+      <div class="quote">"${esc(t.q)}"</div>
+      <div class="who">— ${esc(t.who)||'Happy customer'}</div></div>`).join('');
+  }
+  function esc(t){return(t||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
+  renderStars();
+</script>
+</body>
+</html>
