@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>OneFile — small business tools you own, not rent</title>
-<meta name="description" content="Simple single-file tools for small businesses. No login, no subscription, no cloud. One file, yours forever, works offline.">
+<meta name="description" content="Dead-simple business tools, each a single file you own. No login, no subscription, no cloud. Get the admin done in minutes, not evenings.">
 <style>
   :root{
     --ink:#13212a;--ink2:#43545d;--paper:#f5f2ec;--card:#ffffff;--line:#e6e1d6;
@@ -17,9 +17,9 @@
   body{font-family:var(--sans);color:var(--ink);background:var(--paper);line-height:1.55;-webkit-font-smoothing:antialiased}
   a{color:inherit}
   .wrap{max-width:1060px;margin:0 auto;padding:0 22px}
+  .narrow{max-width:720px}
   .mono{font-family:var(--mono)}
 
-  /* nav */
   nav{position:sticky;top:0;z-index:30;background:rgba(245,242,236,.88);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
   nav .row{display:flex;align-items:center;justify-content:space-between;height:60px}
   .logo{display:flex;align-items:baseline;gap:7px;font-weight:800;font-size:18px;letter-spacing:-.02em}
@@ -30,12 +30,11 @@
   nav .links a.cta{background:var(--ink);color:#fff;padding:8px 15px;border-radius:8px;font-weight:600}
   @media(max-width:720px){nav .links a:not(.cta){display:none}}
 
-  /* hero */
-  .hero{padding:72px 0 56px}
-  .hero .eyebrow{font-family:var(--mono);font-size:13px;color:var(--accent-ink);letter-spacing:.02em;margin-bottom:18px}
-  .hero h1{font-size:clamp(34px,6vw,58px);line-height:1.02;letter-spacing:-.03em;font-weight:800;max-width:14ch}
+  .hero{padding:70px 0 52px}
+  .hero .eyebrow{font-family:var(--mono);font-size:13px;color:var(--accent-ink);margin-bottom:18px}
+  .hero h1{font-size:clamp(32px,5.6vw,54px);line-height:1.04;letter-spacing:-.03em;font-weight:800;max-width:17ch}
   .hero h1 em{font-style:normal;color:var(--accent)}
-  .hero p.lead{font-size:18px;color:var(--ink2);margin-top:20px;max-width:46ch}
+  .hero p.lead{font-size:18px;color:var(--ink2);margin-top:20px;max-width:48ch}
   .hero .ctas{display:flex;gap:12px;margin-top:30px;flex-wrap:wrap}
   .btn{font:inherit;font-weight:600;text-decoration:none;border-radius:10px;padding:13px 22px;cursor:pointer;border:1px solid transparent;display:inline-block}
   .btn.primary{background:var(--accent);color:#fff}
@@ -45,24 +44,41 @@
   .hero .grid{display:grid;grid-template-columns:1.1fr .9fr;gap:48px;align-items:center}
   @media(max-width:820px){.hero .grid{grid-template-columns:1fr;gap:36px}}
 
-  /* signature: the file */
   .file{background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:0 30px 60px -40px rgba(19,33,42,.55);overflow:hidden}
   .file .bar{display:flex;align-items:center;gap:8px;padding:11px 14px;border-bottom:1px solid var(--line);background:#fbfaf6}
   .file .bar .d{width:11px;height:11px;border-radius:50%;background:var(--line)}
   .file .bar .nm{font-family:var(--mono);font-size:12px;color:var(--ink2);margin-left:6px}
   .file .bar .sz{font-family:var(--mono);font-size:11px;color:var(--ink2);margin-left:auto}
   .file .body{padding:22px}
-  .file .line{height:11px;border-radius:5px;background:var(--paper);margin-bottom:11px}
-  .file .line.a{width:62%}.file .line.b{width:88%}.file .line.c{width:40%}
+  .file .it{display:flex;justify-content:space-between;align-items:baseline;padding:9px 0;border-bottom:1px solid var(--line);font-size:14px}
+  .file .it .d{color:var(--ink)}
+  .file .it .a{font-family:var(--mono);color:var(--ink2)}
   .file .total{display:flex;justify-content:space-between;align-items:center;margin-top:18px;padding-top:16px;border-top:1px solid var(--line)}
   .file .total span{font-family:var(--mono);font-weight:700}
   .file .total .v{font-size:22px;color:var(--accent-ink)}
   .file .foot{display:flex;align-items:center;gap:7px;padding:10px 14px;border-top:1px solid var(--line);font-size:12px;color:var(--save);font-weight:600}
   .file .foot .dot{width:7px;height:7px;border-radius:50%;background:var(--save)}
 
-  /* contrast strip */
+  section{padding:60px 0}
+  .sec-head{max-width:54ch;margin-bottom:34px}
+  .sec-head .eyebrow{font-family:var(--mono);font-size:12px;color:var(--accent-ink);margin-bottom:10px}
+  .sec-head h2{font-size:30px;letter-spacing:-.02em;font-weight:800;line-height:1.12}
+  .sec-head p{color:var(--ink2);margin-top:10px;font-size:16px}
+
+  .story{background:var(--card);border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+  .story h2{font-size:28px;letter-spacing:-.02em;font-weight:800;margin-bottom:18px}
+  .story p{font-size:17px;color:var(--ink2);margin-bottom:16px;max-width:62ch}
+  .story p strong{color:var(--ink);font-weight:600}
+  .qs{display:flex;flex-wrap:wrap;gap:10px;margin:26px 0 4px}
+  .q{font-family:var(--mono);font-size:13px;background:var(--paper);border:1px solid var(--line);border-radius:8px;padding:9px 13px;color:var(--ink)}
+
+  .turn{text-align:left}
+  .turn .big{font-size:clamp(26px,4vw,40px);font-weight:800;letter-spacing:-.02em;line-height:1.1;max-width:18ch}
+  .turn .big em{font-style:normal;color:var(--accent)}
+  .turn p{font-size:17px;color:var(--ink2);margin-top:18px;max-width:56ch}
+
   .strip{border-top:1px solid var(--line);border-bottom:1px solid var(--line);background:var(--card)}
-  .strip .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:0}
+  .strip .grid{display:grid;grid-template-columns:repeat(4,1fr)}
   @media(max-width:720px){.strip .grid{grid-template-columns:repeat(2,1fr)}}
   .strip .cell{padding:26px 22px;border-right:1px solid var(--line)}
   .strip .cell:last-child{border-right:none}
@@ -71,14 +87,7 @@
   .strip .cell b{display:block;font-size:15px}
   .strip .cell span{font-size:13px;color:var(--ink2)}
 
-  section{padding:64px 0}
-  .sec-head{max-width:52ch;margin-bottom:36px}
-  .sec-head .eyebrow{font-family:var(--mono);font-size:12px;color:var(--accent-ink);margin-bottom:10px}
-  .sec-head h2{font-size:30px;letter-spacing:-.02em;font-weight:800}
-  .sec-head p{color:var(--ink2);margin-top:10px;font-size:16px}
-
-  /* tools */
-  .group{margin-bottom:34px}
+  .group{margin-bottom:32px}
   .group h3{font-size:14px;font-family:var(--mono);color:var(--ink2);margin-bottom:14px;display:flex;align-items:center;gap:10px}
   .group h3::after{content:"";flex:1;height:1px;background:var(--line)}
   .tools{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
@@ -90,8 +99,9 @@
   .tool b{display:block;font-size:16px;margin-bottom:4px}
   .tool span{font-size:13px;color:var(--ink2)}
   .tool .open{font-size:12px;color:var(--accent-ink);font-weight:600;margin-top:10px;display:inline-block}
+  .trades{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px}
+  .trade{font-size:13px;background:var(--card);border:1px solid var(--line);border-radius:20px;padding:6px 13px;color:var(--ink2)}
 
-  /* how */
   .how{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
   @media(max-width:720px){.how{grid-template-columns:1fr}}
   .step{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:22px}
@@ -99,7 +109,12 @@
   .step b{display:block;font-size:17px;margin-bottom:6px}
   .step p{font-size:14px;color:var(--ink2)}
 
-  /* pricing */
+  .proof{background:var(--ink);color:#fff;text-align:center}
+  .proof h2{font-size:30px;letter-spacing:-.02em;font-weight:800;max-width:20ch;margin:0 auto}
+  .proof p{color:#c4d0d4;font-size:17px;margin:16px auto 0;max-width:54ch}
+  .proof .btn{margin-top:26px}
+  .proof .btn.primary{background:var(--accent)}
+
   .price-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
   @media(max-width:820px){.price-grid{grid-template-columns:1fr}}
   .plan{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:26px;display:flex;flex-direction:column}
@@ -107,19 +122,17 @@
   .plan .tag{font-family:var(--mono);font-size:12px;color:var(--ink2);margin-bottom:10px}
   .plan .tag.hot{color:var(--accent-ink)}
   .plan .amt{font-size:38px;font-weight:800;letter-spacing:-.02em}
-  .plan .amt small{font-size:14px;font-weight:500;color:var(--ink2)}
   .plan .once{font-size:13px;color:var(--save);font-weight:600;margin-top:2px}
   .plan ul{list-style:none;margin:18px 0 22px;font-size:14px}
   .plan ul li{padding:6px 0 6px 22px;position:relative;color:var(--ink2)}
   .plan ul li::before{content:"›";position:absolute;left:4px;color:var(--accent);font-weight:700}
   .plan .btn{margin-top:auto;text-align:center}
 
-  /* faq */
   details{background:var(--card);border:1px solid var(--line);border-radius:10px;margin-bottom:10px;padding:0 18px}
   summary{cursor:pointer;padding:16px 0;font-weight:600;list-style:none;display:flex;justify-content:space-between;align-items:center}
   summary::-webkit-details-marker{display:none}
   summary::after{content:"+";font-family:var(--mono);color:var(--accent);font-size:20px}
-  details[open] summary::after{content:"–"}
+  details[open] summary::after{content:"\2013"}
   details p{padding:0 0 18px;color:var(--ink2);font-size:14px;max-width:64ch}
 
   footer{border-top:1px solid var(--line);padding:34px 0;font-size:13px;color:var(--ink2)}
@@ -148,19 +161,21 @@
 <header class="hero">
   <div class="wrap grid">
     <div>
-      <div class="eyebrow">// no login · no subscription · no cloud</div>
-      <h1>Tools you <em>own</em>. Not tools you rent.</h1>
-      <p class="lead">Small, sharp business tools that live in a single file. Open it in any browser, on any phone. Your data never leaves your device. Buy once, keep it forever.</p>
+      <div class="eyebrow">// for people who run the whole show themselves</div>
+      <h1>You're great at the work. It's the <em>admin</em> that's drowning you.</h1>
+      <p class="lead">Small, sharp business tools that get the boring half of running a business done in minutes — not in the hours after everyone's gone to bed.</p>
       <div class="ctas">
-        <a href="#pricing" class="btn primary">Get the toolkit</a>
-        <a href="#tools" class="btn ghost">See every tool</a>
+        <a href="#tools" class="btn primary">See the tools</a>
+        <a href="#story" class="btn ghost">Why this exists</a>
       </div>
     </div>
     <div>
       <div class="file" aria-hidden="true">
         <div class="bar"><span class="d"></span><span class="nm">quote-maker.html</span><span class="sz">47 KB</span></div>
         <div class="body">
-          <div class="line a"></div><div class="line b"></div><div class="line c"></div>
+          <div class="it"><span class="d">Custom 8" cake</span><span class="a">S$280.00</span></div>
+          <div class="it"><span class="d">Cupcakes &times;12</span><span class="a">S$100.00</span></div>
+          <div class="it"><span class="d">Delivery</span><span class="a">S$40.00</span></div>
           <div class="total"><span>Total</span><span class="v">S$420.00</span></div>
         </div>
         <div class="foot"><span class="dot"></span>Saved on this device · works offline</div>
@@ -169,11 +184,35 @@
   </div>
 </header>
 
+<section id="story" class="story">
+  <div class="wrap narrow">
+    <h2>It's late. The real work is finally done.</h2>
+    <p>The cakes are boxed. Or the last student's gone home, the shutters are down, the van's unpacked. Whatever you do, the part you're good at is over for the day. Now comes the part nobody warned you about.</p>
+    <p>You're scrolling back through WhatsApp trying to remember what you promised who. You're not actually sure who's paid you this month. That quote you meant to send three days ago is still in your head. And somewhere in your gut, you suspect you charged too little — <strong>again</strong>.</p>
+    <p>You didn't go solo to become an admin clerk. But a one-person business means you <strong>are</strong> the clerk, the bookkeeper, the front desk and the debt chaser — usually long after everyone else is asleep.</p>
+    <p>So you go looking for software to help. And every option wants you to make an account, pay $20 a month forever, sit through "onboarding," and hand your customer list to a server you'll never see. A second job, just to manage your side job.</p>
+    <div class="qs">
+      <span class="q">Who still owes me?</span>
+      <span class="q">Did I charge enough?</span>
+      <span class="q">What did I promise this customer?</span>
+      <span class="q">What am I even making this week?</span>
+    </div>
+  </div>
+</section>
+
+<section class="turn">
+  <div class="wrap narrow">
+    <div class="big">So here's the <em>opposite</em> kind of tool.</div>
+    <p>No account. No subscription. No cloud. Each tool is a single file — you open it in any browser, it works offline, and everything you type stays on your own phone. Buy it once and it's yours, the way a calculator is yours. Nothing to log into, nothing to cancel, nothing watching over your shoulder.</p>
+    <div class="ctas" style="margin-top:24px"><a href="#tools" class="btn primary">Show me the tools</a></div>
+  </div>
+</section>
+
 <div class="strip">
   <div class="wrap grid">
     <div class="cell"><div class="no">monthly fee</div><b>Pay once</b><span>No subscription that creeps up every year.</span></div>
     <div class="cell"><div class="no">sign-up</div><b>No account</b><span>No email, no password, no onboarding.</span></div>
-    <div class="cell"><div class="no">the cloud</div><b>Your data stays put</b><span>Everything lives on your phone, not our server.</span></div>
+    <div class="cell"><div class="no">the cloud</div><b>Your data stays put</b><span>Everything lives on your phone, not a server.</span></div>
     <div class="cell"><div class="no">wifi needed</div><b>Works offline</b><span>Open the file anywhere, even with no signal.</span></div>
   </div>
 </div>
@@ -182,10 +221,15 @@
   <div class="wrap">
     <div class="sec-head">
       <div class="eyebrow">// the toolkit</div>
-      <h2>Fifteen tools. Each one a single file.</h2>
-      <p>Tap any tool to try the live demo. Nothing to install, nothing to sign up for — it just opens.</p>
+      <h2>Fifteen small tools, grouped by the job they do.</h2>
+      <p>Whether you bake, tutor, cut hair, fix aircon or run a stall — grab the ones that fit how you work. Tap any tool to try the live demo; nothing to install.</p>
     </div>
     <div id="toolGroups"></div>
+    <div class="trades" style="margin-top:8px">
+      <span class="trade">home bakers</span><span class="trade">tutors</span><span class="trade">salons &amp; barbers</span>
+      <span class="trade">hawkers &amp; stalls</span><span class="trade">photographers</span><span class="trade">handymen &amp; aircon</span>
+      <span class="trade">cleaners</span><span class="trade">coaches &amp; trainers</span>
+    </div>
   </div>
 </section>
 
@@ -196,10 +240,18 @@
       <h2>From buy to using it, in about a minute.</h2>
     </div>
     <div class="how">
-      <div class="step"><div class="n">01</div><b>Pick your tool</b><p>Choose a single tool or the whole toolkit. Try every demo first — no catch.</p></div>
+      <div class="step"><div class="n">01</div><b>Pick your tool</b><p>Choose a single tool or the whole kit. Try every demo first — no catch.</p></div>
       <div class="step"><div class="n">02</div><b>Pay once</b><p>A one-time payment over a secure checkout. No account, no recurring charge.</p></div>
-      <div class="step"><div class="n">03</div><b>Open the file</b><p>You get the file itself. Save it to your phone's home screen and it's yours for good.</p></div>
+      <div class="step"><div class="n">03</div><b>Open the file</b><p>You get the file itself. Save it to your home screen and it's yours for good.</p></div>
     </div>
+  </div>
+</section>
+
+<section class="proof">
+  <div class="wrap">
+    <h2>Try everything before you trust me with a cent.</h2>
+    <p>I'm one person, not a company — so I won't ask you to take my word for it. Every tool here is a full, working demo. Open them, use them on your own phone, see if they fit how you actually work. Only buy the ones that earn it.</p>
+    <a href="#tools" class="btn primary">Try the demos</a>
   </div>
 </section>
 
@@ -208,7 +260,7 @@
     <div class="sec-head">
       <div class="eyebrow">// pricing</div>
       <h2>One-time. Yours forever.</h2>
-      <p>No tiers, no per-seat pricing, no "upgrade to unlock". Replace the buttons with your own checkout links.</p>
+      <p>No tiers, no per-seat pricing, no "upgrade to unlock." Replace the buttons below with your own checkout links.</p>
     </div>
     <div class="price-grid">
       <div class="plan">
@@ -219,77 +271,68 @@
         <a href="#" class="btn ghost" data-buy="single">Buy a tool</a>
       </div>
       <div class="plan feature">
-        <div class="tag hot">★ best value</div>
+        <div class="tag hot">&#9733; best value</div>
         <div class="amt">S$45</div>
         <div class="once">one-time · all 15</div>
-        <ul><li>Every tool, current & future</li><li>The full small-business kit</li><li>Free minor updates</li><li>Best for running a whole business</li></ul>
+        <ul><li>Every tool, current &amp; future</li><li>The full small-business kit</li><li>Free minor updates</li><li>Best for running a whole business</li></ul>
         <a href="#" class="btn primary" data-buy="bundle">Get the toolkit</a>
       </div>
       <div class="plan">
         <div class="tag">done for you</div>
         <div class="amt">from S$120</div>
         <div class="once">one-time setup</div>
-        <ul><li>A tool customised to your business</li><li>Your name, rates & branding built in</li><li>Sent to you ready to use</li></ul>
-        <a href="#contact" class="btn ghost" data-buy="custom">Request a custom build</a>
+        <ul><li>A tool customised to your business</li><li>Your name, rates &amp; branding built in</li><li>Sent to you ready to use</li></ul>
+        <a href="#faq" class="btn ghost" data-buy="custom">Request a custom build</a>
       </div>
     </div>
   </div>
 </section>
 
 <section id="faq" style="background:var(--card);border-top:1px solid var(--line)">
-  <div class="wrap" style="max-width:760px">
+  <div class="wrap narrow">
     <div class="sec-head"><div class="eyebrow">// questions</div><h2>Fair questions.</h2></div>
-
-    <details open><summary>Who's behind this?</summary><p>A solo maker who got tired of business software that needs a login and a monthly fee for what should be a simple tool. The tools speak for themselves — try every demo before you pay a cent.</p></details>
+    <details open><summary>Who's behind this?</summary><p>One maker who got tired of business software that needs a login and a monthly fee for what should be a simple tool. I'd rather the tools earn your trust than my name — so try every demo before you pay a cent.</p></details>
+    <details><summary>Is this only for bakers?</summary><p>No. Bakers happen to feel this pain sharply, but the tools cover quoting, getting paid, tracking orders, running your day and winning repeat customers — useful whether you tutor, cut hair, fix aircon, shoot weddings or run a stall.</p></details>
     <details><summary>Where does my data go?</summary><p>Nowhere. Everything you type stays in your own browser on your own device. There's no server collecting it, because there's no server at all. That's the whole point.</p></details>
-    <details><summary>Do I need internet or an account?</summary><p>No to both. Once the file is on your phone or laptop it opens offline, with no sign-up, no password, no email required.</p></details>
-    <details><summary>What exactly do I get when I buy?</summary><p>The actual file — an .html document you save and keep. Add it to your home screen and it behaves like an app. No expiry, no "your trial has ended".</p></details>
+    <details><summary>Do I need internet or an account?</summary><p>No to both. Once the file is on your phone or laptop it opens offline, with no sign-up, no password, no email.</p></details>
+    <details><summary>What exactly do I get when I buy?</summary><p>The actual file — an .html document you save and keep. Add it to your home screen and it behaves like an app. No expiry, no "your trial has ended."</p></details>
     <details><summary>Can I get a refund?</summary><p>Yes. Since you can try the full demo before buying, there shouldn't be surprises — but if a tool isn't what you expected, just ask within 14 days.</p></details>
-    <details><summary>Can you customise one for my business?</summary><p>Yes — that's the "done for you" option. Tell me your trade and I'll set a tool up with your name, rates, and look, ready to use. <a id="contact" href="#" style="color:var(--accent-ink);font-weight:600">Get in touch</a>.</p></details>
+    <details><summary>Can you customise one for my business?</summary><p>Yes — that's the "done for you" option. Tell me your trade and I'll set a tool up with your name, rates and look, ready to use.</p></details>
   </div>
 </section>
 
 <footer>
   <div class="wrap row">
     <div class="logo" style="font-size:16px">OneFile<span class="dot"></span></div>
-    <div class="mono">built to be owned, not rented · © <span id="yr"></span></div>
+    <div class="mono">built to be owned, not rented · &copy; <span id="yr"></span></div>
   </div>
 </footer>
 
 <script>
   const GROUPS=[
-    {name:"get paid",items:[
+    {name:"get paid, without the awkward part",items:[
       ["quote-generator.html","Quote Maker","Type line items, hand over a clean PDF quote."],
-      ["payment-tracker.html","Who Owes Me","Track invoices and nudge late payers."],
+      ["payment-tracker.html","Who Owes Me","See who's overdue and send a polite reminder."],
       ["price-list-maker.html","Price List","A tidy PDF price list in two minutes."],
+      ["cake-price-calculator.html","Price It Right","Build a custom price from real costs — stop undercharging."],
       ["booking-confirmation.html","Booking Slip","Deposit + balance confirmation as a PDF."],
     ]},
-    {name:"run the day",items:[
+    {name:"get through the day",items:[
       ["order-manager.html","Order Book","Every order in one place, not buried in chat."],
       ["day-sheet.html","Day Sheet","The day's bookings on one printable page."],
       ["takings-tracker.html","Daily Takings","Log sales and expenses, see today's net."],
-      ["session-fee-tracker.html","Session Tracker","Know who still owes for lessons."],
-      ["rebooking-reminders.html","Rebooking","Nudge regulars overdue for a visit."],
-      ["loyalty-card.html","Loyalty Card","A digital stamp card on your shop phone."],
+      ["session-fee-tracker.html","Session Tracker","Track lessons per client and what's owed."],
+      ["bake-plan.html","Week Planner","Turn the week's orders into a schedule + shopping list."],
     ]},
-    {name:"for home bakers",items:[
-      ["order-page.html","Order Page","A shareable shopfront for your bakes."],
-      ["cake-enquiry-form.html","Cake Enquiry","Turn vague DMs into a tidy order brief."],
-      ["cake-price-calculator.html","Cake Pricing","Price custom cakes so you stop undercharging."],
-      ["bake-plan.html","Bake Plan","This week's orders into a schedule + shopping list."],
+    {name:"keep them coming back",items:[
+      ["rebooking-reminders.html","Rebooking","Nudge regulars who are overdue for a visit."],
+      ["loyalty-card.html","Loyalty Card","A digital stamp card on your shop phone."],
       ["review-collector.html","Reviews","Ask for reviews and keep the kind words."],
+      ["order-page.html","Order Page","A shareable shopfront people can order from."],
+      ["cake-enquiry-form.html","Enquiry Form","Turn vague DMs into a tidy order brief."],
     ]},
   ];
-  document.getElementById('toolGroups').innerHTML=GROUPS.map(g=>`
-    <div class="group">
-      <h3>${g.name}</h3>
-      <div class="tools">${g.items.map(t=>`
-        <a class="tool" href="${t[0]}">
-          <div class="fn">${t[0]}</div>
-          <b>${t[1]}</b><span>${t[2]}</span>
-          <span class="open">Try the demo →</span>
-        </a>`).join('')}</div>
-    </div>`).join('');
+  document.getElementById('toolGroups').innerHTML=GROUPS.map(g=>'<div class="group"><h3>'+g.name+'</h3><div class="tools">'+g.items.map(t=>'<a class="tool" href="'+t[0]+'"><div class="fn">'+t[0]+'</div><b>'+t[1]+'</b><span>'+t[2]+'</span><span class="open">Try the demo &rarr;</span></a>').join('')+'</div></div>').join('');
   document.getElementById('yr').textContent=new Date().getFullYear();
 </script>
 </body>
